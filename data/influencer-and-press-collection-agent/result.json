@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-03-26T00:26:07.995207+00:00",
+  "date": "2026-03-26",
+  "capabilities": {
+    "twitter_cli": true,
+    "xhs_cli": false
+  },
+  "influencers_total": 92,
+  "influencers_fetched": 72,
+  "press_total": 15,
+  "press_fetched": 4,
+  "output_file": "/Users/bytedance/ohc/projects/influencer-and-press-collection-agent/daily/2026-03-26.md"
+}

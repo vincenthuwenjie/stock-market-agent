@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stock Market Agent</title>
+    <style>
+      :root {
+        --bg: #080a0d;
+        --panel: #11161d;
+        --panel-2: #0d1117;
+        --ink: #e8edf2;
+        --muted: #8d9aaa;
+        --line: #26313d;
+        --line-strong: #3b4858;
+        --green: #20b26b;
+        --red: #e5534b;
+        --amber: #d99a22;
+        --blue: #4da3ff;
+        --cyan: #23b6b6;
+        --chip: #19212b;
+        --header: #151b24;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) auto;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        background: #0b0f14;
+      }
+
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.1;
+        font-weight: 700;
+      }
+
+      .stamp {
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        background: var(--chip);
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .pill.good {
+        color: var(--green);
+        border-color: rgba(32, 178, 107, 0.45);
+      }
+
+      .pill.warn {
+        color: var(--amber);
+        border-color: rgba(217, 154, 34, 0.45);
+      }
+
+      .pill.bad {
+        color: var(--red);
+        border-color: rgba(229, 83, 75, 0.45);
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+        grid-template-rows: minmax(290px, 35vh) minmax(350px, 44vh);
+        gap: 10px;
+        padding: 10px;
+        min-height: 0;
+      }
+
+      .panel {
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .panel-head {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        background: var(--header);
+      }
+
+      .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .panel-title strong {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        background: var(--blue);
+      }
+
+      .panel-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .scroll {
+        min-height: 0;
+        overflow: auto;
+      }
+
+      .list {
+        display: grid;
+        gap: 1px;
+        background: var(--line);
+      }
+
+      .news-item {
+        display: grid;
+        gap: 7px;
+        padding: 10px;
+        background: var(--panel);
+      }
+
+      .news-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .news-title {
+        margin: 0;
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .news-summary {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: var(--blue);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 8px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel-2);
+      }
+
+      .tab {
+        border: 1px solid var(--line);
+        background: var(--chip);
+        color: var(--muted);
+        padding: 5px 9px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .tab.active {
+        color: var(--ink);
+        border-color: var(--blue);
+        background: rgba(77, 163, 255, 0.14);
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(118px, 1fr));
+        gap: 1px;
+        background: var(--line);
+      }
+
+      .metric {
+        min-height: 72px;
+        display: grid;
+        align-content: center;
+        gap: 5px;
+        padding: 10px;
+        background: var(--panel);
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .metric small {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 12px;
+      }
+
+      th,
+      td {
+        padding: 7px 8px;
+        border-bottom: 1px solid var(--line);
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        color: var(--muted);
+        background: #0b0f14;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .subgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--line);
+      }
+
+      .section {
+        min-width: 0;
+        background: var(--panel);
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 32px;
+        padding: 7px 9px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .recommendation {
+        border-top: 1px solid var(--line);
+        background: #0b0f14;
+        padding: 10px;
+      }
+
+      .rec-grid {
+        display: grid;
+        grid-template-columns: 220px 1fr 1fr;
+        gap: 10px;
+      }
+
+      .posture {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+        padding: 12px;
+        border: 1px solid var(--line-strong);
+        background: var(--panel);
+      }
+
+      .posture strong {
+        font-size: 24px;
+      }
+
+      .rec-text {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.45;
+        font-size: 13px;
+      }
+
+      .rec-list {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .rec-list li {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 6px;
+      }
+
+      .green {
+        color: var(--green);
+      }
+
+      .red {
+        color: var(--red);
+      }
+
+      .amber {
+        color: var(--amber);
+      }
+
+      .blue {
+        color: var(--blue);
+      }
+
+      .empty,
+      .error {
+        padding: 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 980px) {
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard {
+          grid-template-columns: 1fr;
+          grid-template-rows: repeat(4, minmax(320px, 44vh));
+        }
+
+        .metrics {
+          grid-template-columns: repeat(2, minmax(120px, 1fr));
+        }
+
+        .rec-grid,
+        .subgrid {
+          grid-template-columns: 1fr;
+        }
+
+        .recommendation {
+          grid-row: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Stock Market Agent</h1>
+          <span class="stamp" id="generatedAt">Loading snapshot...</span>
+        </div>
+        <div class="toolbar" id="statusBar"></div>
+      </header>
+
+      <section class="dashboard">
+        <article class="panel">
+          <header class="panel-head">
+            <div class="panel-title"><span class="dot"></span><strong>宏观新闻</strong></div>
+            <div class="panel-actions" id="macroNewsCount"></div>
+          </header>
+          <div class="scroll"><div class="list" id="macroNews"></div></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div class="panel-title"><span class="dot"></span><strong>个股新闻</strong></div>
+            <div class="panel-actions" id="stockNewsCount"></div>
+          </header>
+          <div class="scroll">
+            <div class="tabs" id="stockTabs"></div>
+            <div class="list" id="stockNews"></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div class="panel-title"><span class="dot"></span><strong>宏观指标</strong></div>
+            <div class="panel-actions">Yahoo / IBKR adapter</div>
+          </header>
+          <div class="scroll" id="macroIndicators"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div class="panel-title"><span class="dot"></span><strong>个股指标</strong></div>
+            <div class="panel-actions">M7 configurable</div>
+          </header>
+          <div class="scroll" id="stockIndicators"></div>
+        </article>
+      </section>
+
+      <section class="recommendation" id="recommendation"></section>
+    </main>
+
+    <script>
+      const state = { data: null, activeTicker: null };
+
+      const fmt = (value, suffix = "") => {
+        if (value === null || value === undefined || value === "N/A" || Number.isNaN(value)) return "N/A";
+        return `${value}${suffix}`;
+      };
+
+      const tone = (value) => {
+        if (typeof value !== "number") return "";
+        if (value > 0) return "green";
+        if (value < 0) return "red";
+        return "";
+      };
+
+      const esc = (value) =>
+        String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+
+      const shortTime = (value) => {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value.slice(0, 16);
+        return date.toLocaleString();
+      };
+
+      function renderStatus(statuses) {
+        const bar = document.getElementById("statusBar");
+        bar.innerHTML = statuses
+          .slice(0, 9)
+          .map((s) => {
+            const cls = s.status === "ok" || s.status === "available" ? "good" : s.status === "missing" ? "warn" : "";
+            return `<span class="pill ${cls}" title="${esc(s.detail)}">${esc(s.name)}: ${esc(s.status)}</span>`;
+          })
+          .join("");
+      }
+
+      function renderNewsList(el, items) {
+        if (!items || !items.length) {
+          el.innerHTML = `<div class="empty">No items in this snapshot.</div>`;
+          return;
+        }
+        el.innerHTML = items
+          .map((item) => {
+            const title = esc(item.title);
+            const titleHtml = item.url ? `<a href="${esc(item.url)}" target="_blank" rel="noreferrer">${title}</a>` : title;
+            return `
+              <article class="news-item">
+                <div class="news-top">
+                  <span>${esc(item.source || item.ticker || "")}</span>
+                  <span>${esc(shortTime(item.publishedAt))}</span>
+                </div>
+                <p class="news-title">${titleHtml}</p>
+                ${item.summary ? `<p class="news-summary">${esc(item.summary)}</p>` : ""}
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function renderStockNews(data) {
+        const tickers = data.meta.watchlist || Object.keys(data.stockNews || {});
+        state.activeTicker = state.activeTicker || tickers[0];
+        const tabs = document.getElementById("stockTabs");
+        tabs.innerHTML = tickers
+          .map((ticker) => `<button class="tab ${ticker === state.activeTicker ? "active" : ""}" data-ticker="${ticker}">${ticker}</button>`)
+          .join("");
+        tabs.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.activeTicker = button.dataset.ticker;
+            renderStockNews(state.data);
+          });
+        });
+        renderNewsList(document.getElementById("stockNews"), data.stockNews[state.activeTicker] || []);
+        document.getElementById("stockNewsCount").textContent = `${tickers.length} tickers`;
+      }
+
+      function renderMacroIndicators(macro) {
+        const indices = macro.indices || {};
+        const vol = macro.volatility || {};
+        const fx = macro.fx || {};
+        const bonds = macro.bonds || {};
+        const breadth = macro.breadth || {};
+        document.getElementById("macroIndicators").innerHTML = `
+          <div class="metrics">
+            ${metric("SPY", indices.SPY?.price, `${fmt(indices.SPY?.change1dPct, "%")} 1D`)}
+            ${metric("QQQ", indices.QQQ?.price, `${fmt(indices.QQQ?.change1dPct, "%")} 1D`)}
+            ${metric("VIX", vol.VIX?.value, `${fmt(vol.VIX?.change1dPct, "%")} 1D`)}
+            ${metric("USD/JPY", fx.USDJPY?.value, `${fmt(fx.USDJPY?.change1dPct, "%")} 1D`)}
+          </div>
+          <div class="subgrid">
+            <section class="section">
+              <div class="section-title"><span>ETF Valuation / Trend</span><span>MA</span></div>
+              ${indexTable(indices)}
+            </section>
+            <section class="section">
+              <div class="section-title"><span>Vol / FX / Bonds</span><span>Cross Asset</span></div>
+              ${crossAssetTable(vol, fx, bonds)}
+            </section>
+            <section class="section">
+              <div class="section-title"><span>Option Structure</span><span>Yahoo fallback</span></div>
+              ${optionTable(indices)}
+            </section>
+            <section class="section">
+              <div class="section-title"><span>Market Breadth</span><span>Sample AMA</span></div>
+              ${breadthTable(breadth)}
+            </section>
+          </div>
+        `;
+      }
+
+      function metric(label, value, small) {
+        const smallTone = small && small.includes("-") ? "red" : small && small.includes("N/A") ? "" : "green";
+        return `<div class="metric"><span>${esc(label)}</span><strong>${fmt(value)}</strong><small class="${smallTone}">${esc(small || "")}</small></div>`;
+      }
+
+      function indexTable(indices) {
+        const rows = Object.entries(indices || {})
+          .map(([name, item]) => `
+            <tr>
+              <td>${esc(name)}</td>
+              <td>${fmt(item.pe)}</td>
+              <td>${fmt(item.ma10)}</td>
+              <td>${fmt(item.ma30)}</td>
+              <td>${fmt(item.ma60)}</td>
+              <td>${fmt(item.ma180)}</td>
+              <td>${fmt(item.atr14)}</td>
+            </tr>
+          `)
+          .join("");
+        return `<table><thead><tr><th>Name</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>ATR</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function crossAssetTable(vol, fx, bonds) {
+        const rows = [
+          ["QQQ VIX", vol.QQQ_VIX_PROXY?.value, vol.QQQ_VIX_PROXY?.change1dPct, "%"],
+          ["SPY VIX", vol.SPY_VIX_PROXY?.value, vol.SPY_VIX_PROXY?.change1dPct, "%"],
+          ["USD/CNY", fx.USDCNY?.value, fx.USDCNY?.change1dPct, "%"],
+          ["USD/JPY", fx.USDJPY?.value, fx.USDJPY?.change1dPct, "%"],
+          ["US 1Y", bonds.US1Y?.yield, bonds.US1Y?.change5dPct, "% 5D"],
+          ["US 10Y", bonds.US10Y?.yield, bonds.US10Y?.change5dPct, "% 5D"],
+          ["US 20Y", bonds.US20Y?.yield, bonds.US20Y?.change5dPct, "% 5D"],
+          ["US 30Y", bonds.US30Y?.yield, bonds.US30Y?.change5dPct, "% 5D"]
+        ]
+          .map(([name, value, change, suffix]) => `<tr><td>${name}</td><td>${fmt(value)}</td><td class="${tone(change)}">${fmt(change, suffix)}</td></tr>`)
+          .join("");
+        return `<table><thead><tr><th>Asset</th><th>Value</th><th>Change</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function optionTable(indices) {
+        const rows = Object.entries(indices || {})
+          .map(([name, item]) => {
+            const opt = item.option || {};
+            return `<tr><td>${name}</td><td>${fmt(opt.maxPain)}</td><td>${fmt(opt.iv, "%")}</td><td>${fmt(opt.putCallOiRatio)}</td><td>${esc(opt.expiration || "")}</td></tr>`;
+          })
+          .join("");
+        return `<table><thead><tr><th>Name</th><th>Max Pain</th><th>IV</th><th>P/C OI</th><th>Expiry</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function breadthTable(breadth) {
+        const rows = Object.entries(breadth || {})
+          .map(([name, item]) => `<tr><td>${name}</td><td>${fmt(item.ama10, "%")}</td><td>${fmt(item.ama30, "%")}</td><td>${fmt(item.ama60, "%")}</td><td>${fmt(item.ama180, "%")}</td></tr>`)
+          .join("");
+        return `<table><thead><tr><th>Name</th><th>AMA10</th><th>AMA30</th><th>AMA60</th><th>AMA180</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      function renderStockIndicators(stocks) {
+        const rows = Object.entries(stocks || {})
+          .map(([ticker, item]) => {
+            const opt = item.option || {};
+            return `
+              <tr>
+                <td>${ticker}</td>
+                <td>${fmt(item.price)}</td>
+                <td class="${tone(item.change1dPct)}">${fmt(item.change1dPct, "%")}</td>
+                <td>${fmt(item.pe)}</td>
+                <td>${fmt(item.ma10)}</td>
+                <td>${fmt(item.ma30)}</td>
+                <td>${fmt(item.ma60)}</td>
+                <td>${fmt(item.ma180)}</td>
+                <td>${fmt(opt.maxPain)}</td>
+                <td>${fmt(opt.iv, "%")}</td>
+              </tr>
+            `;
+          })
+          .join("");
+        document.getElementById("stockIndicators").innerHTML = `
+          <table>
+            <thead>
+              <tr><th>Ticker</th><th>Price</th><th>1D</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>Max Pain</th><th>IV</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+
+      function renderRecommendation(reco) {
+        const postureClass = reco.posture === "Risk-on" ? "green" : reco.posture === "Risk-off" ? "red" : "amber";
+        document.getElementById("recommendation").innerHTML = `
+          <div class="rec-grid">
+            <div class="posture">
+              <span class="pill ${postureClass === "green" ? "good" : postureClass === "red" ? "bad" : "warn"}">Model Posture</span>
+              <strong class="${postureClass}">${esc(reco.posture || "Neutral")}</strong>
+              <p class="rec-text">Risk score: ${fmt(reco.riskScore)}</p>
+            </div>
+            <div>
+              <p class="rec-text">${esc(reco.summary || "")}</p>
+              <p class="rec-text">${esc(reco.disclaimer || "")}</p>
+            </div>
+            <div class="subgrid">
+              <section class="section">
+                <div class="section-title">Drivers</div>
+                <ul class="rec-list">${(reco.drivers || []).map((x) => `<li>${esc(x)}</li>`).join("") || "<li>No major drivers.</li>"}</ul>
+              </section>
+              <section class="section">
+                <div class="section-title">Focus</div>
+                <ul class="rec-list">${(reco.focus || []).map((x) => `<li>${esc(x)}</li>`).join("") || "<li>No focus list.</li>"}</ul>
+              </section>
+            </div>
+          </div>
+        `;
+      }
+
+      async function boot() {
+        try {
+          const response = await fetch("./latest.json", { cache: "no-store" });
+          if (!response.ok) throw new Error(`latest.json ${response.status}`);
+          const data = await response.json();
+          state.data = data;
+          document.getElementById("generatedAt").textContent = `Updated ${shortTime(data.generatedAt)}`;
+          document.getElementById("macroNewsCount").textContent = `${(data.macroNews || []).length} items`;
+          renderStatus(data.sourcesStatus || []);
+          renderNewsList(document.getElementById("macroNews"), data.macroNews || []);
+          renderStockNews(data);
+          renderMacroIndicators(data.macroIndicators || {});
+          renderStockIndicators(data.stockIndicators || {});
+          renderRecommendation(data.recommendation || {});
+        } catch (error) {
+          document.body.innerHTML = `<div class="error">Failed to load dashboard snapshot: ${esc(error.message)}</div>`;
+        }
+      }
+
+      boot();
+    </script>
+  </body>
+</html>

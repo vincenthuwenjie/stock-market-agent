@@ -1,0 +1,55 @@
+{
+  "watchlist": ["AAPL", "MSFT", "AMZN", "GOOGL", "META", "NVDA", "TSLA"],
+  "macroTickers": {
+    "QQQ": "QQQ",
+    "SPY": "SPY",
+    "VIX": "^VIX",
+    "QQQ_VIX_PROXY": "^VXN",
+    "SPY_VIX_PROXY": "^VIX",
+    "USDCNY": "CNY=X",
+    "USDJPY": "JPY=X",
+    "US1Y": "^IRX",
+    "US10Y": "^TNX",
+    "US20Y": "^TYX",
+    "US30Y": "^TYX"
+  },
+  "indexConstituentSamples": {
+    "SPY": ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "BRK-B", "AVGO", "TSLA", "JPM", "LLY", "V", "XOM", "UNH", "MA", "COST", "WMT", "HD", "PG"],
+    "QQQ": ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "AVGO", "TSLA", "COST", "NFLX", "AMD", "PEP", "ADBE", "LIN", "CSCO", "TMUS", "INTU", "QCOM", "AMAT"]
+  },
+  "macroKeywords": [
+    "federal reserve",
+    "fed",
+    "fomc",
+    "powell",
+    "rate cut",
+    "rate hike",
+    "treasury",
+    "tariff",
+    "trade war",
+    "war",
+    "iran",
+    "ukraine",
+    "china",
+    "bill",
+    "congress",
+    "white house",
+    "inflation",
+    "cpi",
+    "jobs report",
+    "nonfarm",
+    "shutdown",
+    "debt ceiling"
+  ],
+  "pressSources": [
+    {"name": "Bloomberg", "url": "https://feeds.bloomberg.com/markets/news.rss"},
+    {"name": "Reuters Markets", "url": "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"},
+    {"name": "CNBC", "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html"},
+    {"name": "MarketWatch", "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories"},
+    {"name": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex"}
+  ],
+  "sourcePaths": {
+    "influencerAndPress": "data/influencer-and-press-collection-agent",
+    "tradeThemeCache": "/Users/bytedance/ohc/projects/trade-theme-agent/latest_market_data.json"
+  }
+}

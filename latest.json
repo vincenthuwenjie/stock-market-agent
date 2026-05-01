@@ -1,0 +1,1337 @@
+{
+  "generatedAt": "2026-05-01T15:39:14.472177+00:00",
+  "meta": {
+    "name": "Stock-Market-Agent",
+    "watchlist": [
+      "AAPL",
+      "MSFT",
+      "AMZN",
+      "GOOGL",
+      "META",
+      "NVDA",
+      "TSLA"
+    ],
+    "timezone": "UTC"
+  },
+  "sourcesStatus": [
+    {
+      "name": "yfinance",
+      "status": "ok",
+      "detail": "Python package available"
+    },
+    {
+      "name": "press:Bloomberg",
+      "status": "missing",
+      "detail": "RSS unavailable or empty"
+    },
+    {
+      "name": "press:Reuters Markets",
+      "status": "missing",
+      "detail": "RSS unavailable or empty"
+    },
+    {
+      "name": "press:CNBC",
+      "status": "ok",
+      "detail": "10 RSS items"
+    },
+    {
+      "name": "press:MarketWatch",
+      "status": "ok",
+      "detail": "10 RSS items"
+    },
+    {
+      "name": "press:Yahoo Finance",
+      "status": "missing",
+      "detail": "RSS unavailable or empty"
+    },
+    {
+      "name": "local:influencer-latest",
+      "status": "ok",
+      "detail": "20 macro hits"
+    },
+    {
+      "name": "twitter-cli",
+      "status": "empty",
+      "detail": "0 macro tweets"
+    },
+    {
+      "name": "futubull",
+      "status": "missing",
+      "detail": "CLI not found; Yahoo news fallback"
+    },
+    {
+      "name": "yahoo:stock-news",
+      "status": "ok",
+      "detail": "56 stock news items"
+    },
+    {
+      "name": "local:stock-news",
+      "status": "ok",
+      "detail": "14 ticker mentions"
+    },
+    {
+      "name": "nasdaq:quotes",
+      "status": "ok",
+      "detail": "31/32 quotes"
+    },
+    {
+      "name": "nasdaq:history",
+      "status": "ok",
+      "detail": "31/32 histories"
+    },
+    {
+      "name": "nasdaq:eps",
+      "status": "ok",
+      "detail": "29 TTM EPS values"
+    },
+    {
+      "name": "nasdaq:options",
+      "status": "ok",
+      "detail": "9/9 option chains"
+    },
+    {
+      "name": "cboe:vix",
+      "status": "ok",
+      "detail": "latest close 2026-04-30"
+    },
+    {
+      "name": "cboe:vxn",
+      "status": "ok",
+      "detail": "latest close 2026-04-30"
+    },
+    {
+      "name": "treasury:yield-curve",
+      "status": "ok",
+      "detail": "latest 04/30/2026"
+    },
+    {
+      "name": "fx:open-er-api",
+      "status": "ok",
+      "detail": "Fri, 01 May 2026 00:02:31 +0000"
+    },
+    {
+      "name": "yahoo:history",
+      "status": "skipped",
+      "detail": "pass --live-yahoo for 1y price history"
+    },
+    {
+      "name": "ibkr-tws",
+      "status": "available",
+      "detail": "TWS local package/app check only; live connection not opened"
+    },
+    {
+      "name": "option-opinion",
+      "status": "missing",
+      "detail": "CLI not found; Yahoo option_chain fallback"
+    },
+    {
+      "name": "local:trade-theme-cache",
+      "status": "ok",
+      "detail": "used cached macro market data"
+    }
+  ],
+  "macroNews": [
+    {
+      "title": "Embattled U.S. manufacturers show their mettle, grow for the fourth month in a row despite Iran war",
+      "summary": "American manufacturers grew in April for the fourth month in a row — the longest streak in four years — but an embryonic recovery faces fresh hurdles from rising oil prices and higher inflation tied to the Iran war.",
+      "source": "MarketWatch",
+      "publishedAt": "2026-05-01T14:48:00+00:00",
+      "url": "https://www.marketwatch.com/story/embattled-u-s-manufacturers-show-their-metal-grow-fourth-month-in-a-row-despite-iran-war-8c79a878?mod=mw_rss_topstories",
+      "channel": "press",
+      "importance": 5
+    },
+    {
+      "title": "Oil prices fall after Iran sends updated peace proposal to mediators in Pakistan",
+      "summary": "Under the 1973 War Powers Resolution, a U.S. president needs to withdraw troops 60 days after reporting their deployment to Congress",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T14:29:59+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/oil-prices-today-brent-wti-us-iran-war-trump-war-powers-deadline.html",
+      "channel": "press",
+      "importance": 5
+    },
+    {
+      "title": "Elon Musk billionaires bill supporters draw progressive challengers in Delaware",
+      "summary": "Musk, whose record pay package was in legal limbo in Delaware, relocated Tesla's incorporation out of state during the spat.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T15:03:59+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/elon-musk-billionaire-bill-elections-progressive-challengers-delaware.html",
+      "channel": "press",
+      "importance": 4
+    },
+    {
+      "title": "Lutnick gets grilling on Nvidia chip sales to China in letter from Sen. Chris Coons",
+      "summary": "Sen. Chris Coons demanded answers on H200 chips sales to China after Commerce Secretary Howard Lutnick and the Nvidia CEO Jensen Huang give differing answers.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T14:08:32+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/nvidia-chips-jensen-huang-h200-lutnick-chris-coons.html",
+      "channel": "press",
+      "importance": 4
+    },
+    {
+      "title": "Fed dissenters explain 'no' votes, saying they disagreed with hinting next move would be a cut",
+      "summary": "Federal Reserve officials who voted this week against the post-meeting statement said they didn't think it was appropriate to signal that the next interest rate move would be lower.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T14:07:37+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/fed-dissenters-explain-no-votes-saying-they-disagreed-with-hinting-next-move-would-be-a-cut.html",
+      "channel": "press",
+      "importance": 4
+    },
+    {
+      "title": "最近市场博弈主线明显，所以没太关注除了战争以外的其他因素，刚大概按照权重排序了一下对市场影响较大的几个因素：伊朗战事/油价 > CPI/PCE/非农 > Fed主席推进 > eSLR。假设美伊和谈真的有所进展，就得逐渐关注起来了。 现在市面上消息真真假假，美伊双方一会说谈了一会说没谈，你来我往不亦乐乎。 抛开战争迷雾来看，双方既然透漏出巴基斯坦等友好国家递话，甚至伊朗点名要万斯来谈很难纯编出来的细节。基本可以确定双方私下肯定是有所接触，",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 4
+    },
+    {
+      "title": "Notice how all of the \"groundbreaking\" headlines are forgotten in two weeks. Supreme Court decision on tariffs. Jerome Powell's potential indictment. Citrini ai doom article. Always feels massive in the moment, like “thi",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 4
+    },
+    {
+      "title": "UK exports to U.S. plunge by 25% after Trump's 'liberation day' tariffs blitz",
+      "summary": "The U.K. is now running a trade deficit with its largest trading partner.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T15:11:44+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/uk-exports-us-fall-25-trump-tariffs-liberation-day.html",
+      "channel": "press",
+      "importance": 3
+    },
+    {
+      "title": "Atlassian stock soars 20% after earnings show strong cloud, data center growth",
+      "summary": "Atlassian's stock has been hit hard in the \"SaaS-pocalypse\" sweeping software names as AI threatens to disrupt their business models.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T14:21:31+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/atlassian-team-q3-stock-2026-earnings.html",
+      "channel": "press",
+      "importance": 3
+    },
+    {
+      "title": "Roblox shares plummet 18% as child safety measures weigh on bookings",
+      "summary": "Roblox is facing over 140 federal lawsuits accusing it of failing to prevent child exploitation, and last month settled with Alabama and West Virginia.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T14:18:16+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/roblox-rblx-stock-child-safety-earnings.html",
+      "channel": "press",
+      "importance": 3
+    },
+    {
+      "title": "Trump scraps Scotch whisky tariffs ‘in honor’ of King Charles",
+      "summary": "The move is expected to recoup millions of dollars a month for Scotland’s economy.",
+      "source": "CNBC",
+      "publishedAt": "2026-05-01T10:44:37+00:00",
+      "url": "https://www.cnbc.com/2026/05/01/donald-trump-king-charles-queen-camilla-state-visit-scotch-whisky-tariffs.html",
+      "channel": "press",
+      "importance": 3
+    },
+    {
+      "title": "Software horror: litellm PyPI supply chain attack. Simple `pip install litellm` was enough to exfiltrate SSH keys, AWS/GCP/Azure creds, Kubernetes configs, git credentials, env vars (all your API keys), shell history, cr",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "CHART OF THE DAY: The idea was that Brent/WTI was going to catch up higher towards where Oman/Dubai crude was trading (&gt;$150 a barrel) Instead, we are witnessing Oman/Dubai crude plunging &gt;$45 a barrel in a single ",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "Native USDC. Native rewards. The Native USDC Rewards Program is live. Powered by @USDC. Deposit. Hold. Earn. Details on page: https://t.co/WlrAR6N8WE https://t.co/gU68tcJS4N",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "Software still getting crushed today… and look at this: 52-week drawdowns + valuations: $NOW → 25x P/E $INTU → 18x $ADBE → 10x $CRM → 14x $FICO → 25x $UBER → 21x These were “expensive” not long ago. Now? The reset is rea",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "$MSFT: • Down 23% YTD • ~21x forward earnings • Cheapest in years Last time sentiment broke like this… It went nowhere for 16 years. Different cycle? Or same mistake repeating? https://t.co/LOovWc8FsW",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "Just me or are markets completely numb to recent war headlines? Like little to no reaction. Last 48 hours, tons of major war updates...and basically no reaction. why? Welp, a theory. positioning is already defensive...tr",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "If the naysayers are telling you you’re not a good trader then just do as Jessie Ware says &amp; “Don’t Stop!” Prove them all wrong. 🤝💯 https://t.co/QAx36Sywwv",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "Value-based RL for reasoning. The main improvement is calibrating the loss such that it is zero for zero rewards at initialization. https://t.co/kDB7OjZkD7",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 3
+    },
+    {
+      "title": "The China AI Complex is much more nuanced than what it appears on the surface (open source/open weights, cheaper/faster/better value props) when you factor in the CCP and their long term objectives. Also, I mostly stoppe",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "🇮🇷 Iranian soldiers in underground trenches on Kharg Island are posting photos and stating that they are ready to repel a possible US landing- 👇 🔹 Judging by the photo, the Iranians have already received FPV kamikaze dro",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "Iran has been laying traps and moving additional military personnel and air defenses to Kharg Island in recent weeks in preparation for a possible US operation to take control of the island, per CNN",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "Israel's Prime Minister Netanyahu ordered maximum effort to be made in the next 48 hours to destroy as much as possible of Iran's weapons industry, per NYT",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "Trump reportedly dismissed Netanyahu’s proposal to call for an uprising in Iran, saying he wouldn’t urge civilians into the streets if they’d be “cut down,” per Axios.",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "I want you to understand how unusual this is. 6:49 AM on Monday: A sudden surge in oil futures trading, approximately $580 million in volume, no news, no announcement, nothing public. 7:05 AM: Trump announces a pause on ",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "The best thing for both sides is to make a PEACE deal. If Iran continues its blockade the Strait of Hormuz and holds the global economy hostage, Trump will send ground troops.",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "If you feel bad about unerpeforming the market YTD. Bill Ackmans portfolio is down -8% Dev Kantasaria is down: -20% Chris Hohn is down: -11% These are estimates based on their portfolio at the start of the year. And they",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "Important to remind folks that we have zero idea what’s going on w trump/iran. That’s a fact. Some headlines are doing the ole backflip somersault 180 within minutes. Sure speculate all you want, but there’s no edge righ",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    },
+    {
+      "title": "As I’ve been writing in the DMR. Oil is the number 1 inflation catalyst 🛢️. 💯",
+      "summary": "",
+      "source": "Influencer/Press latest.md",
+      "publishedAt": "",
+      "url": "",
+      "channel": "local",
+      "importance": 1
+    }
+  ],
+  "stockNews": {
+    "AAPL": [
+      {
+        "title": "Apple is nearing its first record close since December after earnings",
+        "summary": "Apple is now on track for its first record closing high since Dec. 2, flipping last week's failed breakout into a fresh test of its all-time high zone.",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T15:34:41+00:00",
+        "url": "https://finance.yahoo.com/markets/article/apple-is-nearing-its-first-record-close-since-december-after-earnings-153441950.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again?",
+        "summary": "Shares of Apple (NASDAQ:AAPL) are up roughly 5% in Friday morning trading, climbing to about $284 after the iPhone maker delivered a powerful fiscal second-quarter beat and bullish forward guidance following Thursday’s close. The rally caps",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T15:29:04+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/apple-pops-5-on-q2-beat-has-the-iphone-maker-found-its-growth-story-again/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "These Stocks Are Today’s Movers: Apple, Sandisk, Roblox, NIO, Atlassian, Western Digital, Clorox, Paramount Skydance, and More",
+        "summary": "Shares of Sandisk and Western Digital slide even after the industry peers post solid results for their latest quarters.",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T15:27:00+00:00",
+        "url": "https://finance.yahoo.com/m/440a03d1-1eab-3b02-86dd-10b6daed2fb8/these-stocks-are-today%E2%80%99s.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "Apple Can't Meet Demand For iPhones Due To Chip Shortages",
+        "summary": "Apple is facing supply constraints for its latest iPhones because of a shortage of advanced processors from TSMC.",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T15:15:37+00:00",
+        "url": "https://finance.yahoo.com/m/6a505125-71ab-35d1-beb7-a3558be0bad7/apple-can%27t-meet-demand-for.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "TSX opens lower as energy volatility persists",
+        "summary": "Investing.com -- Canada’s primary stock index edged lower on Friday morning, as a cooling in energy prices and geopolitical nerves checked the momentum from a massive relief rally in the previous session. By 09:40 ET, the S&P/TSX Composite ",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T14:28:09+00:00",
+        "url": "https://finance.yahoo.com/markets/world-indices/articles/tsx-opens-lower-energy-volatility-142809093.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "The CBOE VIX Falls to 16 Level as Risk-On Trade Returns to Market",
+        "summary": "The CBOE Volatility Index (^VIX) has slipped below 17 to 16.55, settling comfortably into the 15 to 20 range that markets consider business as usual, a remarkable turnaround after a bruising stretch that pushed the fear gauge to a March pea",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T14:23:07+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/the-cboe-vix-falls-to-16-level-as-risk-on-trade-returns-to-market/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "Stock Market Today: Dow Climbs As Apple Jumps On Earnings News; Sandisk Reverses, Twilio Soars (Live Coverage)",
+        "summary": "The Dow Jones Industrial Average and other major stock indexes climbed Friday as Wall Street started the month of May with more gains. Meanwhile, Apple rallied, artificial intelligence leader Sandisk reversed higher and Twilio took off on t",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T14:20:08+00:00",
+        "url": "https://finance.yahoo.com/m/6c56d05b-1a35-3047-846e-488ccd24902c/stock-market-today%3A-dow.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "S&P 500 and Nasdaq Start May at Fresh Record Highs",
+        "summary": "Stocks started off May with some modest gains after the S&P 500 and Nasdaq wrapped their best month since 2020. The Dow rose 332 points, or 0.7%. The S&P 500 was up 0.8%. The Nasdaq was up 1%. The S&P 500 and Nasdaq each set fresh intraday ",
+        "source": "Yahoo Finance AAPL",
+        "publishedAt": "2026-05-01T14:15:50+00:00",
+        "url": "https://finance.yahoo.com/m/23e601b3-ebdf-344a-bce5-d59c24edddd4/s%26p-500-and-nasdaq-start-may.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "有消息声称 $AAPL 获得了 $GOOG 的完全许可，甚至可以蒸馏他们的模型。 这就是Apple的水平。有人需要整个模型才可以蒸馏，有些人不需要。",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "AAPL"
+      },
+      {
+        "title": "2. Options Flow Scanner \"Build a real-time options flow scanner dashboard that detects unusual options activity. For a configurable watchlist (default: NVDA, AAPL, MSFT, AMZN, TSLA, AMD, SPY, QQQ, META, GOOGL), scan for ",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "AAPL"
+      }
+    ],
+    "MSFT": [
+      {
+        "title": "Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again?",
+        "summary": "Shares of Apple (NASDAQ:AAPL) are up roughly 5% in Friday morning trading, climbing to about $284 after the iPhone maker delivered a powerful fiscal second-quarter beat and bullish forward guidance following Thursday’s close. The rally caps",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T15:29:04+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/apple-pops-5-on-q2-beat-has-the-iphone-maker-found-its-growth-story-again/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others. Who Was Left Out?",
+        "summary": "Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense.",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T14:42:00+00:00",
+        "url": "https://finance.yahoo.com/m/bb4de6f8-a20f-39e4-9402-a3e809545961/defense-department-notches-ai.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "Microsoft Corp. (MSFT) Price Target Increased to $525 by Benchmark",
+        "summary": "Microsoft Corporation (NASDAQ:MSFT) is one of the 10 Best AI Stocks to Watch in May. On April 30, TheFly reported that Benchmark analyst Yi Fu Lee raised the company’s price target on Microsoft to $525 from $450 while maintaining a Buy rati",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T14:34:59+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/microsoft-corp-msft-price-target-143459021.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "Is Amazon Stock A Buy At 34x Earnings?",
+        "summary": "The prevailing market narrative surrounding Amazon (AMZN) stock centers almost entirely on an unprecedented $200 billion infrastructure spending cycle and the subsequent pressure on near-term free cash flow. This capital expenditure traject",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T14:21:46+00:00",
+        "url": "https://www.trefis.com/articles/598031/is-amazon-stock-a-buy-at-34x-earnings/2026-05-01?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "S&P 500 and Nasdaq Start May at Fresh Record Highs",
+        "summary": "Stocks started off May with some modest gains after the S&P 500 and Nasdaq wrapped their best month since 2020. The Dow rose 332 points, or 0.7%. The S&P 500 was up 0.8%. The Nasdaq was up 1%. The S&P 500 and Nasdaq each set fresh intraday ",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T14:15:50+00:00",
+        "url": "https://finance.yahoo.com/m/23e601b3-ebdf-344a-bce5-d59c24edddd4/s%26p-500-and-nasdaq-start-may.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "Schwab Analyst: Chip Stocks Face ‘Overhead Supply’ Risk After 50% Rally Off March Lows",
+        "summary": "Nathan Peterson, director of derivatives research and strategy at the Schwab Center for Financial Research, is telling clients to slow down on semiconductors after one of the sharpest rallies the group has produced in years. On the firm’s d",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T14:08:12+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/schwab-analyst-chip-stocks-face-overhead-supply-risk-after-50-rally-off-march-lows/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "S&P 500 profit eyes sharpest quarterly growth in four years after Big Tech results",
+        "summary": "Analysts' expectations for S&P 500 earnings ‌improved sharply after a week ‌dominated by megacap results, LSEG IBES ​data showed on Friday, even as oil prices stayed high and tensions with Iran remained ‌unresolved.  S&P 500 ⁠profits are ex",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T13:53:50+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/p-500-profit-eyes-sharpest-135350447.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "Meta, Microsoft, or Alphabet: Which Magnificent 7 Stock Dominated in April?",
+        "summary": "Among the three Magnificent 7 stocks that reported earnings on Wednesday, April 29, after the close, one name ran away with April. Alphabet (NASDAQ:GOOGL) delivered the quarter that defined the month, while Microsoft (NASDAQ:MSFT) and Meta ",
+        "source": "Yahoo Finance MSFT",
+        "publishedAt": "2026-05-01T13:48:07+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/meta-microsoft-or-alphabet-which-magnificent-7-stock-dominated-in-april/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "$MSFT: • Down 23% YTD • ~21x forward earnings • Cheapest in years Last time sentiment broke like this… It went nowhere for 16 years. Different cycle? Or same mistake repeating? https://t.co/LOovWc8FsW",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "MSFT"
+      },
+      {
+        "title": "$MSFT at a 20x is a joke…. https://t.co/wxywP34dud",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "MSFT"
+      }
+    ],
+    "AMZN": [
+      {
+        "title": "'Big Consensus Trade' — Billionaire Stanley Druckenmiller Is Betting On This Metal Amid Tight Supply and Surging Demand From AI Data Centers",
+        "summary": "Copper is a no-brainer investment due to rising demand from AI data centers and tight supply, according to billionaire investor Stanley Druckenmiller. In an interview with Morgan Stanley in February, Druckenmiller said his Duquesne Family O",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T15:16:05+00:00",
+        "url": "https://finance.yahoo.com/markets/commodities/articles/big-consensus-trade-billionaire-stanley-151605841.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "SPS Commerce Q1 Disappoints, Amazon Headwinds Weigh on Growth, Morgan Stanley Says",
+        "summary": "SPS Commerce (SPSC) reported a disappointing Q1 with revenue missing consensus and continued headwin",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T15:14:44+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/sps-commerce-q1-disappoints-amazon-151444116.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others. Who Was Left Out?",
+        "summary": "Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense.",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T14:42:00+00:00",
+        "url": "https://finance.yahoo.com/m/bb4de6f8-a20f-39e4-9402-a3e809545961/defense-department-notches-ai.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "Nvidia Stock Faces an Old Nemesis—the $200 Level. It’s Losing Today.",
+        "summary": "Nvidia stock was falling in early trading Friday, with the shares slipping further below the closely-watched $200 level after tumbling 4.6% in the previous session.  Nvidia  stock suffered on Thursday after recent earnings from  Amazon  and",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T14:37:00+00:00",
+        "url": "https://finance.yahoo.com/m/f52f630f-ac78-3c04-a45a-6cc9216b1273/nvidia-stock-faces-an-old.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "Is Amazon Stock A Buy At 34x Earnings?",
+        "summary": "The prevailing market narrative surrounding Amazon (AMZN) stock centers almost entirely on an unprecedented $200 billion infrastructure spending cycle and the subsequent pressure on near-term free cash flow. This capital expenditure traject",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T14:21:46+00:00",
+        "url": "https://www.trefis.com/articles/598031/is-amazon-stock-a-buy-at-34x-earnings/2026-05-01?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "Schwab Analyst: Chip Stocks Face ‘Overhead Supply’ Risk After 50% Rally Off March Lows",
+        "summary": "Nathan Peterson, director of derivatives research and strategy at the Schwab Center for Financial Research, is telling clients to slow down on semiconductors after one of the sharpest rallies the group has produced in years. On the firm’s d",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T14:08:12+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/schwab-analyst-chip-stocks-face-overhead-supply-risk-after-50-rally-off-march-lows/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "S&P 500 profit eyes sharpest quarterly growth in four years after Big Tech results",
+        "summary": "Analysts' expectations for S&P 500 earnings ‌improved sharply after a week ‌dominated by megacap results, LSEG IBES ​data showed on Friday, even as oil prices stayed high and tensions with Iran remained ‌unresolved.  S&P 500 ⁠profits are ex",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T13:53:50+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/p-500-profit-eyes-sharpest-135350447.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      },
+      {
+        "title": "Wall Street Is Bullish on Oracle, But Investors Aren’t Buying It",
+        "summary": "(Bloomberg) -- To Wall Street, Oracle Corp. is a screaming buy. To many investors, however, the company’s relationship with OpenAI, its sizable debt load and the durability of its software business have made owning the stock a risk.Most Rea",
+        "source": "Yahoo Finance AMZN",
+        "publishedAt": "2026-05-01T13:40:13+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/wall-street-bullish-oracle-investors-134013796.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "AMZN"
+      }
+    ],
+    "GOOGL": [
+      {
+        "title": "Reddit stock surges after ad revenue jumps 74% in Q1",
+        "summary": "Reddit stock jumped after the online platform reported better-than-expected earnings and ad sales.",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T15:30:31+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/article/reddit-stock-surges-after-ad-revenue-jumps-74-in-q1-153031425.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again?",
+        "summary": "Shares of Apple (NASDAQ:AAPL) are up roughly 5% in Friday morning trading, climbing to about $284 after the iPhone maker delivered a powerful fiscal second-quarter beat and bullish forward guidance following Thursday’s close. The rally caps",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T15:29:04+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/apple-pops-5-on-q2-beat-has-the-iphone-maker-found-its-growth-story-again/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "'Big Consensus Trade' — Billionaire Stanley Druckenmiller Is Betting On This Metal Amid Tight Supply and Surging Demand From AI Data Centers",
+        "summary": "Copper is a no-brainer investment due to rising demand from AI data centers and tight supply, according to billionaire investor Stanley Druckenmiller. In an interview with Morgan Stanley in February, Druckenmiller said his Duquesne Family O",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T15:16:05+00:00",
+        "url": "https://finance.yahoo.com/markets/commodities/articles/big-consensus-trade-billionaire-stanley-151605841.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others. Who Was Left Out?",
+        "summary": "Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense.",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T14:42:00+00:00",
+        "url": "https://finance.yahoo.com/m/bb4de6f8-a20f-39e4-9402-a3e809545961/defense-department-notches-ai.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "Nvidia Stock Faces an Old Nemesis—the $200 Level. It’s Losing Today.",
+        "summary": "Nvidia stock was falling in early trading Friday, with the shares slipping further below the closely-watched $200 level after tumbling 4.6% in the previous session.  Nvidia  stock suffered on Thursday after recent earnings from  Amazon  and",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T14:37:00+00:00",
+        "url": "https://finance.yahoo.com/m/f52f630f-ac78-3c04-a45a-6cc9216b1273/nvidia-stock-faces-an-old.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "Alphabet Inc. (GOOGL) Price Target Raised by Raymond James to $425 Following Q1 Financial Results",
+        "summary": "Alphabet Inc. (NASDAQ:GOOGL) is one of the 10 Best AI Stocks to Watch in May. On April 30, Raymond James raised its price target on Alphabet to $425 from $400 and maintained a strong buy rating for the stock, according to a report by TheFly",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T14:35:02+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/alphabet-inc-googl-price-target-143502039.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "Is Amazon Stock A Buy At 34x Earnings?",
+        "summary": "The prevailing market narrative surrounding Amazon (AMZN) stock centers almost entirely on an unprecedented $200 billion infrastructure spending cycle and the subsequent pressure on near-term free cash flow. This capital expenditure traject",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T14:21:46+00:00",
+        "url": "https://www.trefis.com/articles/598031/is-amazon-stock-a-buy-at-34x-earnings/2026-05-01?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      },
+      {
+        "title": "EV Policy Collapse and AI Megacap Drift: What DRIV Investors Must Watch in 2026",
+        "summary": "The Global X Autonomous & Electric Vehicles ETF (NASDAQ:DRIV) was built to solve a single problem for investors: capturing the autonomous and electric vehicle buildout without having to pick the eventual winners across chipmakers, automaker",
+        "source": "Yahoo Finance GOOGL",
+        "publishedAt": "2026-05-01T14:20:40+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/ev-policy-collapse-and-ai-megacap-drift-what-driv-investors-must-watch-in-2026/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "GOOGL"
+      }
+    ],
+    "META": [
+      {
+        "title": "CoreWeave gains as analysts raise outlook on AI demand",
+        "summary": "Strong AI demand drives more bullish outlook",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T15:36:35+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/coreweave-gains-analysts-raise-outlook-153635486.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "Reddit stock surges after ad revenue jumps 74% in Q1",
+        "summary": "Reddit stock jumped after the online platform reported better-than-expected earnings and ad sales.",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T15:30:31+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/article/reddit-stock-surges-after-ad-revenue-jumps-74-in-q1-153031425.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again?",
+        "summary": "Shares of Apple (NASDAQ:AAPL) are up roughly 5% in Friday morning trading, climbing to about $284 after the iPhone maker delivered a powerful fiscal second-quarter beat and bullish forward guidance following Thursday’s close. The rally caps",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T15:29:04+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/apple-pops-5-on-q2-beat-has-the-iphone-maker-found-its-growth-story-again/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "'Big Consensus Trade' — Billionaire Stanley Druckenmiller Is Betting On This Metal Amid Tight Supply and Surging Demand From AI Data Centers",
+        "summary": "Copper is a no-brainer investment due to rising demand from AI data centers and tight supply, according to billionaire investor Stanley Druckenmiller. In an interview with Morgan Stanley in February, Druckenmiller said his Duquesne Family O",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T15:16:05+00:00",
+        "url": "https://finance.yahoo.com/markets/commodities/articles/big-consensus-trade-billionaire-stanley-151605841.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others. Who Was Left Out?",
+        "summary": "Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense.",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T14:42:00+00:00",
+        "url": "https://finance.yahoo.com/m/bb4de6f8-a20f-39e4-9402-a3e809545961/defense-department-notches-ai.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "Can Meta Platforms (META) Become One of the Leading Superintelligence Companies?",
+        "summary": "Meta Platforms, Inc. (NASDAQ:META) is one of the 10 Best AI Stocks to Watch in May. On April 30, Evercore ISI increased its price target on Meta to $930 from $900 and kept an Outperform rating on the shares as it highlighted the company’s A",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T14:35:00+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/meta-platforms-meta-become-one-143500522.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "Is Amazon Stock A Buy At 34x Earnings?",
+        "summary": "The prevailing market narrative surrounding Amazon (AMZN) stock centers almost entirely on an unprecedented $200 billion infrastructure spending cycle and the subsequent pressure on near-term free cash flow. This capital expenditure traject",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T14:21:46+00:00",
+        "url": "https://www.trefis.com/articles/598031/is-amazon-stock-a-buy-at-34x-earnings/2026-05-01?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "S&P 500 and Nasdaq Start May at Fresh Record Highs",
+        "summary": "Stocks started off May with some modest gains after the S&P 500 and Nasdaq wrapped their best month since 2020. The Dow rose 332 points, or 0.7%. The S&P 500 was up 0.8%. The Nasdaq was up 1%. The S&P 500 and Nasdaq each set fresh intraday ",
+        "source": "Yahoo Finance META",
+        "publishedAt": "2026-05-01T14:15:50+00:00",
+        "url": "https://finance.yahoo.com/m/23e601b3-ebdf-344a-bce5-d59c24edddd4/s%26p-500-and-nasdaq-start-may.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "META"
+      },
+      {
+        "title": "The verdict is in and it's not good for Meta or YouTube",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "这篇文章中推荐的三款产品有一定科学道理，但不算“刚需续命神器”。效果因人而异，证据强度中等偏弱，尤其是预防用途。 基于最新临床试验、meta分析（2023-2025年）和权威综述（如Cochrane、PubMed、AHA相关研究），“收益”主要针对特定人群，不是给所有中老年或高压力打工人“标配”。 生活方式（饮食、运动、睡眠）永远是基础，保健品只是辅助。 1. 辅酶Q10（CoQ10）——心脏和抗氧化，有一定支持，但预防效果有限 科学依",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "$META 目标达到9万亿美元的市值。 如果他们有 $TSLA 的PE的一半，那就已经实现目标了。",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "### 机灵的杰尼君🔶BNB (@Meta8Mate) — Crypto",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "今天美股三大指数集体反弹，道指涨305点报46429，标普涨0.54%报6591，纳指涨0.77%报21929，主要是隔夜传出美国通过巴基斯坦向伊朗递交了15点停火方案，市场一开盘就跳涨了超过1%，但盘中一度几乎回吐全部涨幅，尾盘又拉了回来，这过山车坐的真刺激 今天最大的亮点是Arm，暴涨将近17%，昨天在旧金山发布了公司36年来第一颗自研芯片AGI CPU，专门做AI推理的数据中心处理器，Meta是第一个大客户，OpenAI、Cere",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "为啥我这么怂,因为摩根大通在为谷歌、亚马逊、Meta这几家科技巨头量身定制信用违约互换（CDS）(08年次贷危机的工具)。华尔街聪明钱已经开始加大下注对冲科技巨头债务风险！ 大到了摩根大通必须专门增加盘口的地步！ https://t.co/6r8YklB3R8",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "[Meta is laying off hundreds of employees as it pours money into AI](https://www.theverge.com/tech/900946/meta-layoffs-hundreds-employees)",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "> Meta is laying off hundreds of employees across its company, according to reports from The New York Times, NBC News, and The Information. The job cuts",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "[Meta, YouTube must pay $3M to woman who got hooked on apps as a child](https://arstechnica.com/tech-policy/2026/03/meta-youtube-must-pay-3m-to-woman-who-got-hooked-on-apps-as-a-child/)",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      },
+      {
+        "title": "> Meta emerges as the biggest loser as second child safety trial verdict hits.",
+        "summary": "",
+        "source": "Influencer/Press latest.md",
+        "publishedAt": "",
+        "url": "",
+        "channel": "local",
+        "ticker": "META"
+      }
+    ],
+    "NVDA": [
+      {
+        "title": "Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again?",
+        "summary": "Shares of Apple (NASDAQ:AAPL) are up roughly 5% in Friday morning trading, climbing to about $284 after the iPhone maker delivered a powerful fiscal second-quarter beat and bullish forward guidance following Thursday’s close. The rally caps",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T15:29:04+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/apple-pops-5-on-q2-beat-has-the-iphone-maker-found-its-growth-story-again/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "Income Investors Can Rely on Ford’s Dividend: Here’s Why the Payout Is Secure",
+        "summary": "Ford (NYSE: F) sells trucks, SUVs, and commercial vehicles, with Ford Pro and Ford Blue carrying the profit load while Model e bleeds cash. Shares trade near $12, and management just declared another $0.15 quarterly dividend. With an $8.2 b",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T15:20:56+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/income-investors-can-rely-on-fords-dividend-heres-why-the-payout-is-secure/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "Century Aluminum Is Building a $4 Billion Smelter. Is CENX Stock a Buy Right Now?",
+        "summary": "The largest producer of primary aluminum in the United States is partnering with Emirates Global Aluminum to build the first new aluminum smelter in the U.S. in 46 years.",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T15:20:00+00:00",
+        "url": "https://www.fool.com/investing/2026/05/01/century-aluminum-is-building-a-4-billion-smelter/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "The AI Gold Rush Just Hit a New Layer: Here’s Why Sandisk Is Printing Money",
+        "summary": "The artificial intelligence boom is entering a new phase. For the past two years, investors obsessed over GPUs, data centers, and power consumption. But agentic AI — systems that can reason, plan, and act independently — is changing the equ",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T15:07:32+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/the-ai-gold-rush-just-hit-a-new-layer-heres-why-sandisk-is-printing-money/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "David Neeleman Reveals the Burger Chain Strategy That Built Four Airlines, and Why Your Startup Should Copy It",
+        "summary": "When a founder who has launched four airlines tells you to think like a burger chain, it pays to listen. On a recent How I Built This with Guy Raz Advice Line, JetBlue (NASDAQ: JBLU) founder and current Breeze Airways CEO David Neeleman fie",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T15:04:34+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/david-neeleman-reveals-the-burger-chain-strategy-that-built-four-airlines-and-why-your-startup-should-copy-it/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "Forget Nvidia: This AI Semiconductor Stock in Billionaire Philippe Laffont Portfolio Is Winning in 2026",
+        "summary": "We just covered Here is How Billionaire Philippe Laffont’s Top 10 Picks Crushed The Market. Lam Research Corporation (NASDAQ:LRCX) ranks #10 (see the Here is How Billionaire Philippe Laffont’s Top 5 Picks Crushed The Market). YTD Stock Perf",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T14:47:39+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/forget-nvidia-ai-semiconductor-stock-144739366.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "Is Broadcom (AVGO) The Best AI Chip Stock in Billionaire Philippe Laffont’s Portfolio?",
+        "summary": "We just covered Here is How Billionaire Philippe Laffont’s Top 10 Picks Crushed The Market. Broadcom Inc. (NASDAQ:AVGO) ranks #8 (see the Here is How Billionaire Philippe Laffont’s Top 5 Picks Crushed The Market). YTD Stock Performance: +22",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T14:45:05+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/broadcom-avgo-best-ai-chip-144505224.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      },
+      {
+        "title": "Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others. Who Was Left Out?",
+        "summary": "Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense.",
+        "source": "Yahoo Finance NVDA",
+        "publishedAt": "2026-05-01T14:42:00+00:00",
+        "url": "https://finance.yahoo.com/m/bb4de6f8-a20f-39e4-9402-a3e809545961/defense-department-notches-ai.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "NVDA"
+      }
+    ],
+    "TSLA": [
+      {
+        "title": "Tesla stock higher for week as Semi starts production, company nets $573M in sales from SpaceX, xAI last year",
+        "summary": "Tesla stock is poised to finish the day and week higher, following last week's drop in the wake of earnings.",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T14:52:55+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/article/tesla-stock-higher-for-week-as-semi-starts-production-company-nets-573m-in-sales-from-spacex-xai-last-year-145255503.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "Tesla Sold SpaceX $143 Million Worth Of Cars: SEC Filing",
+        "summary": "An updated SEC filing disclosed Tesla's sale of electric vehicles to CEO Elon Musk's other company SpaceX. Tesla stock is up about 1%.",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T14:50:05+00:00",
+        "url": "https://finance.yahoo.com/m/cd9c8790-9700-3752-a820-48ac40b6c744/tesla-sold-spacex-%24143.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "Tesla reports $158 billion Elon Musk compensation for 2025",
+        "summary": "The figure is almost entirely an accounting-driven valuation; no shares have vested and Tesla says Musk's realized pay was zero",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T14:41:10+00:00",
+        "url": "https://qz.com/tesla-elon-musk-compensation-158-billion-2025-050126?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "NIO Stock Drops. The U.S. Isn’t the Only Country With an EV Problem.",
+        "summary": "China is facing an EV slowdown, just like the U.S. Well, not exactly like the U.S. Deliveries from several Chinese electric vehicle makers slipped in April, compared with March.  Coming into Friday trading, NIO stock was up 25% year to date",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T14:30:00+00:00",
+        "url": "https://finance.yahoo.com/m/5a94db5c-b9f9-3d4d-a546-d8b2a58ed998/nio-stock-drops.-the-u.s..html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "Tesla Is Burning Billions to Build Its AI Future—and the Stock Is Feeling It",
+        "summary": "Tesla  stock rose in April.  The move comes after Tesla stock gained 2.7% in April, its first positive month for 2026.  Investors have lofty expectations for Tesla’s plans to populate the world with “physical AI” applications such as robo-t",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T14:21:00+00:00",
+        "url": "https://finance.yahoo.com/m/9bf9d53f-9069-3255-8d2b-733b102c1031/tesla-is-burning-billions-to.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "EV Policy Collapse and AI Megacap Drift: What DRIV Investors Must Watch in 2026",
+        "summary": "The Global X Autonomous & Electric Vehicles ETF (NASDAQ:DRIV) was built to solve a single problem for investors: capturing the autonomous and electric vehicle buildout without having to pick the eventual winners across chipmakers, automaker",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T14:20:40+00:00",
+        "url": "https://247wallst.com/investing/2026/05/01/ev-policy-collapse-and-ai-megacap-drift-what-driv-investors-must-watch-in-2026/?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "Tesla Rivals BYD, Geely, Xiaomi See Sales Bump. These China EV Makers Decline.",
+        "summary": "BYD, Geely, Leap and Xiaomi deliveries rose in April as the industry's new models still roll out. Li Auto and Nio saw sales decline.",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T13:46:51+00:00",
+        "url": "https://finance.yahoo.com/m/9d2af6a6-398c-377d-8feb-b2c910144cc6/tesla-rivals-byd%2C-geely%2C.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      },
+      {
+        "title": "Wall Street Is Bullish on Oracle, But Investors Aren’t Buying It",
+        "summary": "(Bloomberg) -- To Wall Street, Oracle Corp. is a screaming buy. To many investors, however, the company’s relationship with OpenAI, its sizable debt load and the durability of its software business have made owning the stock a risk.Most Rea",
+        "source": "Yahoo Finance TSLA",
+        "publishedAt": "2026-05-01T13:40:13+00:00",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/wall-street-bullish-oracle-investors-134013796.html?.tsrc=rss",
+        "channel": "press",
+        "ticker": "TSLA"
+      }
+    ]
+  },
+  "macroIndicators": {
+    "indices": {
+      "QQQ": {
+        "price": 675.39,
+        "change1dPct": 1.15,
+        "pe": 51.73,
+        "peSource": "Nasdaq top-holdings sample PE proxy",
+        "ma10": 656.15,
+        "ma30": 615.53,
+        "ma60": 610.39,
+        "ma180": 607.71,
+        "option": {
+          "source": "Nasdaq option-chain",
+          "maxPain": 650.0,
+          "iv": "N/A",
+          "callOpenInterest": 377469,
+          "putOpenInterest": 552911,
+          "putCallOiRatio": 1.46,
+          "expiration": "May 1, 2026"
+        },
+        "atr14": 6.18,
+        "source": "Nasdaq quote",
+        "timestamp": "May 1, 2026 11:38 AM ET"
+      },
+      "SPY": {
+        "price": 723.8,
+        "change1dPct": 0.72,
+        "pe": 49.17,
+        "peSource": "Nasdaq top-holdings sample PE proxy",
+        "ma10": 711.51,
+        "ma30": 679.9,
+        "ma60": 680.68,
+        "ma180": 674.72,
+        "option": {
+          "source": "Nasdaq option-chain",
+          "maxPain": 708.0,
+          "iv": "N/A",
+          "callOpenInterest": 380940,
+          "putOpenInterest": 1068977,
+          "putCallOiRatio": 2.81,
+          "expiration": "May 1, 2026"
+        },
+        "atr14": 4.57,
+        "source": "Nasdaq quote",
+        "timestamp": "May 1, 2026 11:38 AM ET"
+      }
+    },
+    "volatility": {
+      "VIX": {
+        "value": 16.89,
+        "change1dPct": -10.21,
+        "source": "Cboe VIX history"
+      },
+      "QQQ_VIX_PROXY": {
+        "value": 21.79,
+        "change1dPct": -8.29,
+        "source": "Cboe VXN history"
+      },
+      "SPY_VIX_PROXY": {
+        "value": 16.89,
+        "change1dPct": -10.21,
+        "source": "Cboe VIX history"
+      }
+    },
+    "fx": {
+      "USDCNY": {
+        "value": 6.8409,
+        "change1dPct": "N/A",
+        "source": "open.er-api.com"
+      },
+      "USDJPY": {
+        "value": 157.1639,
+        "change1dPct": "N/A",
+        "source": "open.er-api.com"
+      }
+    },
+    "bonds": {
+      "US1Y": {
+        "yield": 3.72,
+        "change5dPct": 0.54,
+        "asOf": "04/30/2026",
+        "source": "US Treasury daily yield curve"
+      },
+      "US10Y": {
+        "yield": 4.4,
+        "change5dPct": 1.38,
+        "asOf": "04/30/2026",
+        "source": "US Treasury daily yield curve"
+      },
+      "US20Y": {
+        "yield": 4.97,
+        "change5dPct": 1.43,
+        "asOf": "04/30/2026",
+        "source": "US Treasury daily yield curve"
+      },
+      "US30Y": {
+        "yield": 4.98,
+        "change5dPct": 1.22,
+        "asOf": "04/30/2026",
+        "source": "US Treasury daily yield curve"
+      }
+    },
+    "breadth": {
+      "SPY": {
+        "sampleSize": 20,
+        "ama10": 68.4,
+        "ama30": 78.9,
+        "ama60": 68.4,
+        "ama180": 63.2
+      },
+      "QQQ": {
+        "sampleSize": 20,
+        "ama10": 65.0,
+        "ama30": 80.0,
+        "ama60": 70.0,
+        "ama180": 65.0
+      }
+    },
+    "source": "Nasdaq quote/history, Cboe VIX, US Treasury, open.er-api; Yahoo optional fallback"
+  },
+  "stockIndicators": {
+    "AAPL": {
+      "price": 284.3201,
+      "change1dPct": 4.78,
+      "pe": 34.38,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 8.27,
+      "ma10": 270.69,
+      "ma30": 260.45,
+      "ma60": 262.36,
+      "ma180": 259.43,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 270.0,
+        "iv": "N/A",
+        "callOpenInterest": 251695,
+        "putOpenInterest": 254336,
+        "putCallOiRatio": 1.01,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    },
+    "MSFT": {
+      "price": 415.58,
+      "change1dPct": 1.91,
+      "pe": 25.67,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 16.19,
+      "ma10": 422.46,
+      "ma30": 392.98,
+      "ma60": 397.16,
+      "ma180": 463.0,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 405.0,
+        "iv": "N/A",
+        "callOpenInterest": 320391,
+        "putOpenInterest": 148802,
+        "putCallOiRatio": 0.46,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    },
+    "AMZN": {
+      "price": 270.46,
+      "change1dPct": 2.04,
+      "pe": 37.88,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 7.14,
+      "ma10": 257.21,
+      "ma30": 231.96,
+      "ma60": 221.11,
+      "ma180": 227.39,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 252.5,
+        "iv": "N/A",
+        "callOpenInterest": 309417,
+        "putOpenInterest": 195150,
+        "putCallOiRatio": 0.63,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    },
+    "GOOGL": {
+      "price": 386.27,
+      "change1dPct": 0.38,
+      "pe": 29.46,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 13.11,
+      "ma10": 346.89,
+      "ma30": 318.53,
+      "ma60": 314.23,
+      "ma180": 289.78,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 345.0,
+        "iv": "N/A",
+        "callOpenInterest": 165772,
+        "putOpenInterest": 121701,
+        "putCallOiRatio": 0.73,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    },
+    "META": {
+      "price": 613.61,
+      "change1dPct": 0.28,
+      "pe": 20.07,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 30.58,
+      "ma10": 666.82,
+      "ma30": 622.0,
+      "ma60": 635.69,
+      "ma180": 672.49,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 620.0,
+        "iv": "N/A",
+        "callOpenInterest": 219781,
+        "putOpenInterest": 123982,
+        "putCallOiRatio": 0.56,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    },
+    "NVDA": {
+      "price": 199.175,
+      "change1dPct": -0.2,
+      "pe": 43.58,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 4.57,
+      "ma10": 205.26,
+      "ma30": 188.61,
+      "ma60": 186.5,
+      "ma180": 184.56,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 197.5,
+        "iv": "N/A",
+        "callOpenInterest": 723191,
+        "putOpenInterest": 522105,
+        "putCallOiRatio": 0.72,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    },
+    "TSLA": {
+      "price": 395.0901,
+      "change1dPct": 3.53,
+      "pe": 349.64,
+      "peSource": "Nasdaq price / TTM EPS",
+      "epsTtm": 1.13,
+      "ma10": 382.62,
+      "ma30": 372.06,
+      "ma60": 389.14,
+      "ma180": 411.1,
+      "option": {
+        "source": "Nasdaq option-chain",
+        "maxPain": 375.0,
+        "iv": "N/A",
+        "callOpenInterest": 515885,
+        "putOpenInterest": 335275,
+        "putCallOiRatio": 0.65,
+        "expiration": "May 1, 2026"
+      },
+      "source": "Nasdaq quote",
+      "timestamp": "May 1, 2026 11:38 AM ET"
+    }
+  },
+  "recommendation": {
+    "posture": "Neutral",
+    "riskScore": 2,
+    "summary": "Market backdrop is mixed with score 2; keep position sizing moderate and wait for stronger cross-asset confirmation.",
+    "drivers": [
+      "SPY sample breadth above 60% over MA60",
+      "Multiple high-impact macro headlines detected"
+    ],
+    "focus": [
+      "AAPL: trend above MA60",
+      "MSFT: trend above MA60",
+      "AMZN: trend above MA60",
+      "GOOGL: trend above MA60",
+      "META: below MA60, wait for repair",
+      "NVDA: trend above MA60",
+      "TSLA: trend above MA60"
+    ],
+    "disclaimer": "Rules-based dashboard signal only; not an order or investment advice."
+  }
+}
