@@ -87,10 +87,6 @@ export function MarketDashboard({ initialData }: Props) {
     return () => window.clearInterval(interval);
   }, [data.meta.refreshSeconds]);
 
-  useEffect(() => {
-    void refresh();
-  }, []);
-
   const stockRows = useMemo(() => Object.entries(data.stockIndicators), [data.stockIndicators]);
   const activeNews = data.stockNews[activeTicker] ?? [];
   const qqq = data.macroIndicators.indices.QQQ;
