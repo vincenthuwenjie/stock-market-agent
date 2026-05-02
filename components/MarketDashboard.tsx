@@ -7,6 +7,44 @@ type Props = {
   initialData: MarketSnapshot;
 };
 
+const NA: Scalar = "N/A";
+const EMPTY_OPTION = {
+  source: "unavailable",
+  maxPain: NA,
+  iv: NA,
+  callOpenInterest: NA,
+  putOpenInterest: NA,
+  putCallOiRatio: NA,
+  expiration: "",
+};
+const EMPTY_INDEX = {
+  price: NA,
+  change1dPct: NA,
+  pe: NA,
+  peSource: "unavailable",
+  ma10: NA,
+  ma30: NA,
+  ma60: NA,
+  ma180: NA,
+  atr14: NA,
+  option: EMPTY_OPTION,
+  source: "unavailable",
+  timestamp: "",
+};
+const EMPTY_VALUE = { value: NA, change1dPct: NA, source: "unavailable" };
+const EMPTY_YIELD = { yield: NA, change5dPct: NA, asOf: "", source: "unavailable" };
+const EMPTY_LIQUIDITY = {
+  netLiquidity: NA,
+  netLiquidityChange1w: NA,
+  netLiquidityChange4w: NA,
+  fedBalanceSheet: NA,
+  tga: NA,
+  rrp: NA,
+  asOf: "",
+  source: "unavailable",
+  formula: "WALCL - WTREGEN - RRPONTSYD",
+};
+
 function fmt(value: Scalar | undefined, suffix = "") {
   if (value === undefined || value === "N/A" || Number.isNaN(value)) return "N/A";
   return `${value}${suffix}`;
@@ -68,7 +106,7 @@ function stanceClass(stance: string) {
 
 export function MarketDashboard({ initialData }: Props) {
   const [data, setData] = useState(initialData);
-  const [activeTicker, setActiveTicker] = useState(initialData.meta.watchlist[0] ?? "AAPL");
+  const [activeTicker, setActiveTicker] = useState(initialData.meta?.watchlist?.[0] ?? "AAPL");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   async function refresh() {
@@ -83,17 +121,30 @@ export function MarketDashboard({ initialData }: Props) {
   }
 
   useEffect(() => {
-    const interval = window.setInterval(refresh, data.meta.refreshSeconds * 1000);
+    const refreshSeconds = data.meta?.refreshSeconds ?? 300;
+    const interval = window.setInterval(refresh, refreshSeconds * 1000);
     return () => window.clearInterval(interval);
-  }, [data.meta.refreshSeconds]);
+  }, [data.meta?.refreshSeconds]);
 
-  const stockRows = useMemo(() => Object.entries(data.stockIndicators), [data.stockIndicators]);
-  const activeNews = data.stockNews[activeTicker] ?? [];
-  const qqq = data.macroIndicators.indices.QQQ;
-  const spy = data.macroIndicators.indices.SPY;
-  const vix = data.macroIndicators.volatility.VIX;
-  const liquidity = data.macroIndicators.liquidity;
-  const usdjpy = data.macroIndicators.fx.USDJPY;
+  const stockRows = useMemo(() => Object.entries(data.stockIndicators ?? {}), [data.stockIndicators]);
+  const watchlist = data.meta?.watchlist ?? [];
+  const activeNews = data.stockNews?.[activeTicker] ?? [];
+  const indices = data.macroIndicators?.indices ?? {};
+  const volatility = data.macroIndicators?.volatility ?? {};
+  const fx = data.macroIndicators?.fx ?? {};
+  const bonds = data.macroIndicators?.bonds ?? {};
+  const breadth = data.macroIndicators?.breadth ?? {};
+  const qqq = indices.QQQ ?? EMPTY_INDEX;
+  const spy = indices.SPY ?? EMPTY_INDEX;
+  const vix = volatility.VIX ?? EMPTY_VALUE;
+  const liquidity = data.macroIndicators?.liquidity ?? EMPTY_LIQUIDITY;
+  const usdjpy = fx.USDJPY ?? EMPTY_VALUE;
+  const influencerMockAnalysis = data.influencerMockAnalysis ?? {
+    asOf: "",
+    source: "unavailable",
+    summary: "Influencer mock analysis unavailable in this snapshot.",
+    items: [],
+  };
 
   return (
     <main className="shell">
@@ -106,7 +157,7 @@ export function MarketDashboard({ initialData }: Props) {
           <button className="refresh" type="button" onClick={refresh} disabled={isRefreshing} title="Refresh snapshot">
             {isRefreshing ? "Refreshing" : "Refresh"}
           </button>
-          {data.sourcesStatus.slice(0, 10).map((source) => (
+          {(data.sourcesStatus ?? []).slice(0, 10).map((source) => (
             <span
               className={`pill ${source.status === "ok" || source.status === "available" ? "good" : source.status === "missing" ? "warn" : ""}`}
               key={`${source.name}-${source.status}`}
@@ -122,19 +173,19 @@ export function MarketDashboard({ initialData }: Props) {
         <article className="panel">
           <header className="panel-head">
             <div className="panel-title"><span className="dot" /><strong>宏观新闻</strong></div>
-            <div className="panel-actions">{data.macroNews.length} items</div>
+            <div className="panel-actions">{(data.macroNews ?? []).length} items</div>
           </header>
-          <div className="scroll"><NewsList items={data.macroNews} /></div>
+          <div className="scroll"><NewsList items={data.macroNews ?? []} /></div>
         </article>
 
         <article className="panel">
           <header className="panel-head">
             <div className="panel-title"><span className="dot" /><strong>个股新闻</strong></div>
-            <div className="panel-actions">{data.meta.watchlist.length} tickers</div>
+            <div className="panel-actions">{watchlist.length} tickers</div>
           </header>
           <div className="scroll">
             <div className="tabs">
-              {data.meta.watchlist.map((ticker) => (
+              {watchlist.map((ticker) => (
                 <button className={`tab ${ticker === activeTicker ? "active" : ""}`} key={ticker} onClick={() => setActiveTicker(ticker)} type="button">
                   {ticker}
                 </button>
@@ -175,7 +226,7 @@ export function MarketDashboard({ initialData }: Props) {
                 <table>
                   <thead><tr><th>Name</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>ATR</th></tr></thead>
                   <tbody>
-                    {Object.entries(data.macroIndicators.indices).map(([name, item]) => (
+                    {Object.entries(indices).map(([name, item]) => (
                       <tr key={name}><td title={item.peSource}>{name}</td><td>{fmt(item.pe)}</td><td>{fmt(item.ma10)}</td><td>{fmt(item.ma30)}</td><td>{fmt(item.ma60)}</td><td>{fmt(item.ma180)}</td><td>{fmt(item.atr14)}</td></tr>
                     ))}
                   </tbody>
@@ -187,14 +238,14 @@ export function MarketDashboard({ initialData }: Props) {
                   <thead><tr><th>Asset</th><th>Value</th><th>Change</th></tr></thead>
                   <tbody>
                     {[
-                      ["QQQ VIX", data.macroIndicators.volatility.QQQ_VIX_PROXY?.value, data.macroIndicators.volatility.QQQ_VIX_PROXY?.change1dPct],
-                      ["SPY VIX", data.macroIndicators.volatility.SPY_VIX_PROXY?.value, data.macroIndicators.volatility.SPY_VIX_PROXY?.change1dPct],
-                      ["USD/CNY", data.macroIndicators.fx.USDCNY?.value, data.macroIndicators.fx.USDCNY?.change1dPct],
-                      ["USD/JPY", data.macroIndicators.fx.USDJPY?.value, data.macroIndicators.fx.USDJPY?.change1dPct],
-                      ["US 1Y", data.macroIndicators.bonds.US1Y?.yield, data.macroIndicators.bonds.US1Y?.change5dPct],
-                      ["US 10Y", data.macroIndicators.bonds.US10Y?.yield, data.macroIndicators.bonds.US10Y?.change5dPct],
-                      ["US 20Y", data.macroIndicators.bonds.US20Y?.yield, data.macroIndicators.bonds.US20Y?.change5dPct],
-                      ["US 30Y", data.macroIndicators.bonds.US30Y?.yield, data.macroIndicators.bonds.US30Y?.change5dPct],
+                      ["QQQ VIX", volatility.QQQ_VIX_PROXY?.value, volatility.QQQ_VIX_PROXY?.change1dPct],
+                      ["SPY VIX", volatility.SPY_VIX_PROXY?.value, volatility.SPY_VIX_PROXY?.change1dPct],
+                      ["USD/CNY", fx.USDCNY?.value, fx.USDCNY?.change1dPct],
+                      ["USD/JPY", fx.USDJPY?.value, fx.USDJPY?.change1dPct],
+                      ["US 1Y", (bonds.US1Y ?? EMPTY_YIELD).yield, (bonds.US1Y ?? EMPTY_YIELD).change5dPct],
+                      ["US 10Y", (bonds.US10Y ?? EMPTY_YIELD).yield, (bonds.US10Y ?? EMPTY_YIELD).change5dPct],
+                      ["US 20Y", (bonds.US20Y ?? EMPTY_YIELD).yield, (bonds.US20Y ?? EMPTY_YIELD).change5dPct],
+                      ["US 30Y", (bonds.US30Y ?? EMPTY_YIELD).yield, (bonds.US30Y ?? EMPTY_YIELD).change5dPct],
                     ].map(([name, value, change]) => (
                       <tr key={name as string}><td>{name}</td><td>{fmt(value as Scalar)}</td><td className={tone(change as Scalar)}>{fmt(change as Scalar, "%")}</td></tr>
                     ))}
@@ -206,7 +257,7 @@ export function MarketDashboard({ initialData }: Props) {
                 <table>
                   <thead><tr><th>Name</th><th>Max Pain</th><th>IV</th><th>P/C OI</th><th>Expiry</th></tr></thead>
                   <tbody>
-                    {Object.entries(data.macroIndicators.indices).map(([name, item]) => (
+                    {Object.entries(indices).map(([name, item]) => (
                       <tr key={name}><td>{name}</td><td>{fmt(item.option.maxPain)}</td><td>{fmt(item.option.iv, "%")}</td><td>{fmt(item.option.putCallOiRatio)}</td><td>{item.option.expiration}</td></tr>
                     ))}
                   </tbody>
@@ -217,7 +268,7 @@ export function MarketDashboard({ initialData }: Props) {
                 <table>
                   <thead><tr><th>Name</th><th>AMA10</th><th>AMA30</th><th>AMA60</th><th>AMA180</th></tr></thead>
                   <tbody>
-                    {Object.entries(data.macroIndicators.breadth).map(([name, item]) => (
+                    {Object.entries(breadth).map(([name, item]) => (
                       <tr key={name}><td>{name}</td><td>{fmt(item.ama10 as Scalar, "%")}</td><td>{fmt(item.ama30 as Scalar, "%")}</td><td>{fmt(item.ama60 as Scalar, "%")}</td><td>{fmt(item.ama180 as Scalar, "%")}</td></tr>
                     ))}
                   </tbody>
@@ -261,22 +312,22 @@ export function MarketDashboard({ initialData }: Props) {
       <section className="recommendation">
         <div className="rec-grid">
           <div className="posture">
-            <span className={`pill ${data.recommendation.posture === "Risk-on" ? "good" : data.recommendation.posture === "Risk-off" ? "bad" : "warn"}`}>Model Posture</span>
-            <strong className={data.recommendation.posture === "Risk-on" ? "green" : data.recommendation.posture === "Risk-off" ? "red" : "amber"}>{data.recommendation.posture}</strong>
-            <p className="rec-text">Risk score: {data.recommendation.riskScore}</p>
+            <span className={`pill ${data.recommendation?.posture === "Risk-on" ? "good" : data.recommendation?.posture === "Risk-off" ? "bad" : "warn"}`}>Model Posture</span>
+            <strong className={data.recommendation?.posture === "Risk-on" ? "green" : data.recommendation?.posture === "Risk-off" ? "red" : "amber"}>{data.recommendation?.posture ?? "Neutral"}</strong>
+            <p className="rec-text">Risk score: {data.recommendation?.riskScore ?? "N/A"}</p>
           </div>
           <div>
-            <p className="rec-text">{data.recommendation.summary}</p>
-            <p className="rec-text">{data.recommendation.disclaimer}</p>
+            <p className="rec-text">{data.recommendation?.summary ?? "Recommendation unavailable in this snapshot."}</p>
+            <p className="rec-text">{data.recommendation?.disclaimer ?? "Rules-based dashboard signal only; not an order or investment advice."}</p>
           </div>
           <div className="subgrid">
             <section className="section">
               <div className="section-title">Drivers</div>
-              <ul className="rec-list">{(data.recommendation.drivers.length ? data.recommendation.drivers : ["No major drivers."]).map((item) => <li key={item}>{item}</li>)}</ul>
+              <ul className="rec-list">{(data.recommendation?.drivers?.length ? data.recommendation.drivers : ["No major drivers."]).map((item) => <li key={item}>{item}</li>)}</ul>
             </section>
             <section className="section">
               <div className="section-title">Focus</div>
-              <ul className="rec-list">{(data.recommendation.focus.length ? data.recommendation.focus : ["No focus list."]).map((item) => <li key={item}>{item}</li>)}</ul>
+              <ul className="rec-list">{(data.recommendation?.focus?.length ? data.recommendation.focus : ["No focus list."]).map((item) => <li key={item}>{item}</li>)}</ul>
             </section>
           </div>
         </div>
@@ -285,15 +336,15 @@ export function MarketDashboard({ initialData }: Props) {
       <section className="influencer-analysis">
         <header className="panel-head">
           <div className="panel-title"><span className="dot" /><strong>Influencer AI Mock Analysis</strong></div>
-          <div className="panel-actions">{data.influencerMockAnalysis.asOf || "latest.md"}</div>
+          <div className="panel-actions">{influencerMockAnalysis.asOf || "latest.md"}</div>
         </header>
         <div className="analysis-summary">
-          <p className="rec-text">{data.influencerMockAnalysis.summary}</p>
-          <span className="stamp" title={data.influencerMockAnalysis.source}>{data.influencerMockAnalysis.source}</span>
+          <p className="rec-text">{influencerMockAnalysis.summary}</p>
+          <span className="stamp" title={influencerMockAnalysis.source}>{influencerMockAnalysis.source}</span>
         </div>
-        {data.influencerMockAnalysis.items.length ? (
+        {influencerMockAnalysis.items.length ? (
           <div className="analysis-grid">
-            {data.influencerMockAnalysis.items.map((item) => (
+            {influencerMockAnalysis.items.map((item) => (
               <article className="analysis-card" key={`${item.handle}-${item.theme}`}>
                 <div className="analysis-top">
                   <div>
