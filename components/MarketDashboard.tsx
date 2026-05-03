@@ -141,25 +141,25 @@ const KNOWN_TEXT_ZH: Array<[RegExp, string]> = [
   [/^Roblox is facing over 140 federal lawsuits accusing it of failing to prevent child exploitation, and last month settled with Alabama and West Virginia\.$/i, "Roblox 面临超过 140 起联邦诉讼，被指未能防止儿童剥削；上月已与阿拉巴马州和西弗吉尼亚州达成和解。"],
   [/^Trump scraps Scotch whisky tariffs ‘in honor’ of King Charles$/i, "特朗普“为致敬查尔斯国王”取消苏格兰威士忌关税"],
   [/^The move is expected to recoup millions of dollars a month for Scotland’s economy\.$/i, "此举预计每月可为苏格兰经济挽回数百万美元。"],
-  [/^Notice how all of the "groundbreaking" headlines are forgotten in two weeks\..*/i, "观察点：许多看似颠覆性的标题会在两周内被市场遗忘，包括关税判决、鲍威尔相关政治风险和人工智能悲观叙事；短期冲击很强，但延续性需要价格确认。"],
-  [/^Software horror: litellm PyPI supply chain attack\..*/i, "软件供应链风险：一个 Python 包安装即可窃取密钥、云凭证、配置文件和私钥，提醒市场继续关注开发者生态安全风险。"],
-  [/^CHART OF THE DAY: The idea was that Brent\/WTI was going to catch up higher.*/i, "图表观察：原油价差没有按预期收敛，阿曼和迪拜原油单日大幅下跌，说明地缘风险溢价正在快速重定价。"],
-  [/^Native USDC\. Native rewards\..*/i, "加密资产消息：原生稳定币奖励计划上线，强调存入、持有和赚取收益的链上资金流动性叙事。"],
-  [/^Software still getting crushed today.*/i, "软件股继续承压，多只高质量软件公司估值已明显回落，市场正在重新评估增长股定价。"],
-  [/^\$MSFT:.*Cheapest in years.*/i, "$MSFT：年内跌幅较大，远期估值降至多年低位；市场在讨论这是新周期机会，还是情绪破位后的长期盘整。"],
-  [/^Just me or are markets completely numb to recent war headlines\?.*/i, "市场观察：近期战争标题对价格影响变小，可能说明仓位已经偏防御，投资者正等待更明确的事件方向。"],
-  [/^If the naysayers are telling you you’re not a good trader.*/i, "交易情绪：面对质疑时保持纪律，不因短期噪音改变交易计划。"],
+  [/^Notice how all of the "groundbreaking" headlines are forgotten in two weeks\..*/i, "注意所有“开创性”的头条新闻是如何在两周内被遗忘的。最高法院关于关税的裁决、杰罗姆·鲍威尔可能被起诉、Citrini 关于人工智能末日的文章。它们在当下总是显得很重大，像是“这会改变一切”。生活再也不会一样了。"],
+  [/^Software horror: litellm PyPI supply chain attack\..*/i, "软件恐怖事件：litellm PyPI 供应链攻击。只要简单执行 pip install litellm 就足以窃取 SSH 密钥、AWS/GCP/Azure 凭证、Kubernetes 配置、git 凭证、环境变量、API 密钥、shell 历史记录、加密钱包、SSL 私钥、CI/CD 密钥和数据库密码。"],
+  [/^CHART OF THE DAY: The idea was that Brent\/WTI was going to catch up higher.*/i, "今日图表：原本的想法是布伦特/WTI 会向上追赶阿曼/迪拜原油的交易水平（每桶超过 150 美元）。相反，我们看到阿曼/迪拜原油单日暴跌超过 45 美元，跌至每桶约 110 美元。"],
+  [/^Native USDC\. Native rewards\..*/i, "原生 USDC。原生奖励。原生 USDC 奖励计划已经上线，由 USDC 提供支持。存入、持有、赚取。"],
+  [/^Software still getting crushed today.*/i, "软件股今天仍在遭受重挫。看看这些 52 周回撤和估值：$NOW 为 25 倍市盈率，$INTU 为 18 倍，$ADBE 为 10 倍，$CRM 为 14 倍，$FICO 为 25 倍，$UBER 为 21 倍。它们不久前还被认为“昂贵”。现在，重置是真的。"],
+  [/^\$MSFT:.*Cheapest in years.*/i, "$MSFT：年初至今下跌 23%，约 21 倍远期收益，为多年来最便宜。上一次情绪这样崩坏时，它横盘了 16 年。是不同的周期，还是同样的错误在重演？"],
+  [/^Just me or are markets completely numb to recent war headlines\?.*/i, "只有我这么觉得吗，还是市场对最近的战争头条已经完全麻木了？几乎没有反应。过去 48 小时有大量重大战争更新，但基本没有反应。为什么？一个理论是，仓位已经偏防御。"],
+  [/^If the naysayers are telling you you’re not a good trader.*/i, "如果那些唱反调的人说你不是一个好交易员，那就照 Jessie Ware 说的去做：“不要停！”证明他们都错了。"],
   [/^Value-based RL for reasoning\..*/i, "人工智能研究：面向推理的价值型强化学习改进，重点在训练初期对零奖励损失进行校准。"],
   [/^The China AI Complex is much more nuanced.*/i, "中国人工智能产业链比表面更复杂，开源权重、低成本和长期政策目标共同影响全球竞争格局。"],
   [/^🇮🇷 Iranian soldiers in underground trenches on Kharg Island.*/i, "伊朗士兵在 Kharg 岛地下阵地展示防御准备，相关照片显示其可能已部署无人机等装备。"],
   [/^Iran has been laying traps and moving additional military personnel and air defenses to Kharg Island.*/i, "据报道，伊朗近期在 Kharg 岛布设陷阱并增派军力和防空系统，以防备美国可能的登陆行动。"],
   [/^Israel's Prime Minister Netanyahu ordered maximum effort.*/i, "据报道，以色列总理内塔尼亚胡要求未来 48 小时内尽最大努力打击伊朗武器工业。"],
   [/^Trump reportedly dismissed Netanyahu’s proposal.*/i, "据报道，特朗普拒绝内塔尼亚胡呼吁伊朗民众起义的建议，原因是担心平民遭到镇压。"],
-  [/^I want you to understand how unusual this is\..*/i, "异常交易观察：油价期货在公开消息前突然放量，随后特朗普宣布暂停对伊朗打击，市场立即反应，时间顺序值得关注。"],
-  [/^The best thing for both sides is to make a PEACE deal\..*/i, "地缘风险判断：双方达成和平协议对市场最有利；若霍尔木兹海峡封锁延续，军事升级风险会上升。"],
-  [/^If you feel bad about unerpeforming the market YTD\..*/i, "仓位情绪：多位知名投资人的组合年内表现也落后市场，说明当前环境对主动管理并不友好。"],
-  [/^Important to remind folks that we have zero idea what’s going on w trump\/iran\..*/i, "提醒：特朗普与伊朗相关消息反复变化，市场没有稳定信息优势，当前更适合谨慎跟踪而不是过度交易。"],
-  [/^As I’ve been writing in the DMR\. Oil is the number 1 inflation catalyst.*/i, "通胀观察：油价仍是当前最重要的通胀催化因素。"],
+  [/^I want you to understand how unusual this is\..*/i, "我想让你明白这有多不寻常。周一早上 6:49，石油期货交易突然激增，成交量约 5.8 亿美元，没有新闻、没有公告、没有任何公开消息。早上 7:05，特朗普宣布暂停对伊朗的打击。市场立即波动。"],
+  [/^The best thing for both sides is to make a PEACE deal\..*/i, "对双方来说最好的事情是达成和平协议。如果伊朗继续封锁霍尔木兹海峡并挟持全球经济，特朗普将派出地面部队。"],
+  [/^If you feel bad about unerpeforming the market YTD\..*/i, "如果你因为今年以来跑输市场而感觉不好，Bill Ackman 的投资组合下跌了 8%，Dev Kantasaria 下跌了 20%，Chris Hohn 下跌了 11%。这些是基于他们年初投资组合的估算。"],
+  [/^Important to remind folks that we have zero idea what’s going on w trump\/iran\..*/i, "重要的是提醒大家，我们完全不知道特朗普/伊朗之间发生了什么。这是事实。有些头条新闻几分钟内就会来个 180 度大反转。你当然可以尽情猜测，但现在没有优势。"],
+  [/^As I’ve been writing in the DMR\. Oil is the number 1 inflation catalyst.*/i, "正如我一直在 DMR 中写的那样，石油是第一大通胀催化剂。"],
   [/^Apple is nearing its first record close since December after earnings$/i, "财报后苹果接近去年 12 月以来首次创纪录收盘"],
   [/^Apple is now on track for its first record closing high since Dec\. 2.*/i, "苹果有望创下 12 月 2 日以来首个收盘新高，上周失败的突破正在转化为对历史高位区间的新测试。"],
   [/^Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again\?$/i, "第二财季业绩超预期后苹果上涨 5%，市场重新评估其增长故事"],
@@ -170,7 +170,7 @@ const KNOWN_TEXT_ZH: Array<[RegExp, string]> = [
   [/^Apple is facing supply constraints for its latest iPhones.*/i, "由于台积电先进处理器供应短缺，苹果最新 iPhone 面临供给约束。"],
   [/^TSX opens lower as energy volatility persists$/i, "能源波动延续，加拿大 TSX 指数低开"],
   [/^Investing\.com -- Canada’s primary stock index edged lower.*/i, "加拿大主要股指周五早盘小幅走低，能源价格降温与地缘紧张压制了前一交易日的大幅反弹动能。"],
-  [/^Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others\. Who Was Left Out\?$/i, "美国国防部与英伟达、亚马逊等 7 家公司达成人工智能协议，市场关注谁被排除在外"],
+  [/^Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others\. Who Was Left Out\?$/i, "美国国防部与英伟达、亚马逊等另外 5 家公司达成人工智能协议。谁被排除在外？"],
   [/^Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense\.$/i, "英伟达、微软、谷歌、SpaceX、OpenAI 和亚马逊都将成为美国国防部的人工智能供应商。"],
   [/^Microsoft Corp\. \(MSFT\) Price Target Increased to \$525 by Benchmark$/i, "Benchmark 将微软目标价上调至 525 美元"],
   [/^Microsoft Corporation \(NASDAQ:MSFT\) is one of the 10 Best AI Stocks.*/i, "微软被列为 5 月值得关注的人工智能股票之一；Benchmark 分析师上调目标价并维持买入评级。"],
@@ -405,10 +405,78 @@ function localize(value: string | undefined, lang: Lang) {
   return lang === "zh" ? zhText(value) : (UI_EN[value] ?? value);
 }
 
+const ALLOWED_LATIN_TEXT = new Set([
+  "AI",
+  "M7",
+  "SPY",
+  "QQQ",
+  "VIX",
+  "USD",
+  "JPY",
+  "CNY",
+  "AAPL",
+  "MSFT",
+  "AMZN",
+  "GOOGL",
+  "GOOG",
+  "META",
+  "NVDA",
+  "TSLA",
+  "NIO",
+]);
+
+function needsServerTranslation(value: string) {
+  const words = value.match(/[A-Za-z][A-Za-z'’.-]{2,}/g) ?? [];
+  return words.some((word) => !ALLOWED_LATIN_TEXT.has(word.toUpperCase()));
+}
+
+const translationCache = new Map<string, string>();
+
+function TranslatedText({ value, lang }: { value: string; lang: Lang }) {
+  const syncText = localize(value, lang);
+  const shouldTranslate = lang === "zh" && needsServerTranslation(syncText);
+  const [translated, setTranslated] = useState(() => shouldTranslate ? (translationCache.get(value) ?? "") : syncText);
+
+  useEffect(() => {
+    if (!shouldTranslate) {
+      setTranslated(syncText);
+      return;
+    }
+    const cached = translationCache.get(value);
+    if (cached) {
+      setTranslated(cached);
+      return;
+    }
+
+    let cancelled = false;
+    setTranslated("");
+    void fetch("/api/translate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ texts: [value] }),
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error(`translate ${response.status}`)))
+      .then((payload: { translations?: Record<string, string> }) => {
+        const next = payload.translations?.[value] ?? syncText;
+        translationCache.set(value, next);
+        if (!cancelled) setTranslated(next);
+      })
+      .catch(() => {
+        if (!cancelled) setTranslated("翻译失败");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, shouldTranslate, syncText, value]);
+
+  return <>{translated || "翻译中..."}</>;
+}
+
 function localizeSource(value: string | undefined, lang: Lang) {
   if (!value || lang === "en") return value ?? "";
   const yahoo = value.match(/^Yahoo Finance ([A-Z]{1,6})$/);
   if (yahoo) return `雅虎财经 ${yahoo[1]}`;
+  if (value === "Yahoo Finance") return "雅虎财经";
   if (value === "MarketWatch") return "市场观察";
   if (value === "CNBC") return "财经电视台";
   if (value === "Influencer/Press latest.md") return "影响者与媒体合集";
@@ -447,11 +515,11 @@ function NewsList({ items, lang }: { items: NewsItem[]; lang: Lang }) {
           <p className="news-title">
             {item.url ? (
               <a href={item.url} target="_blank" rel="noreferrer">
-                {localize(item.title, lang)}
+                <TranslatedText value={item.title} lang={lang} />
               </a>
-            ) : localize(item.title, lang)}
+            ) : <TranslatedText value={item.title} lang={lang} />}
           </p>
-          {item.summary ? <p className="news-summary">{localize(item.summary, lang)}</p> : null}
+          {item.summary ? <p className="news-summary"><TranslatedText value={item.summary} lang={lang} /></p> : null}
         </article>
       ))}
     </div>
@@ -723,7 +791,7 @@ export function MarketDashboard({ initialData }: Props) {
           <div className="panel-actions">{influencerMockAnalysis.asOf || "latest.md"}</div>
         </header>
         <div className="analysis-summary">
-          <p className="rec-text">{localize(influencerMockAnalysis.summary, lang)}</p>
+          {lang === "en" ? <p className="rec-text">{influencerMockAnalysis.summary}</p> : null}
           <span className="stamp" title={influencerMockAnalysis.source}>{localizeSource(influencerMockAnalysis.source, lang)}</span>
         </div>
         {influencerMockAnalysis.items.length ? (
@@ -732,15 +800,14 @@ export function MarketDashboard({ initialData }: Props) {
               <article className="analysis-card" key={`${item.handle}-${item.theme}`}>
                 <div className="analysis-top">
                   <div>
-                    <strong>{item.name}</strong>
+                    <strong><TranslatedText value={item.name} lang={lang} /></strong>
                     <span>{item.handle} · {localize(item.domain, lang)}</span>
                   </div>
                   <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
                 </div>
                 <div className="section-title"><span>{localize(item.theme, lang)}</span><span>{localize("mock read", lang)}</span></div>
-                <p className="analysis-thesis">{localize(item.thesis, lang)}</p>
-                <p className="rec-text">{localize(item.marketRead, lang)}</p>
-                <ul className="rec-list">{item.evidence.map((line) => <li key={line}>{localize(line, lang)}</li>)}</ul>
+                <p className="analysis-thesis"><TranslatedText value={item.thesis} lang={lang} /></p>
+                <ul className="rec-list">{item.evidence.map((line) => <li key={line}><TranslatedText value={line} lang={lang} /></li>)}</ul>
               </article>
             ))}
           </div>
