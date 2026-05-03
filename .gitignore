@@ -4,3 +4,4 @@ out/
 .vercel/
 *.tsbuildinfo
 __pycache__/
+.env*.local

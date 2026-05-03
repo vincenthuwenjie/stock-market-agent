@@ -1,0 +1,22 @@
+{
+  "date": "2026-05-03",
+  "asOf": "2026-05-03T20:00:00.000Z",
+  "source": "partner option feed",
+  "options": {
+    "AAPL": {
+      "maxPain": 205,
+      "iv": 28.4,
+      "callOpenInterest": 123456,
+      "putOpenInterest": 98765,
+      "putCallOiRatio": 0.8,
+      "expiration": "2026-05-15"
+    },
+    "NVDA": {
+      "max_pain": 920,
+      "implied_volatility": 42.1,
+      "call_oi": 223344,
+      "put_oi": 198765,
+      "expiry": "2026-05-15"
+    }
+  }
+}
