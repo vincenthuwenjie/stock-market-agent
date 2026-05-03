@@ -76,7 +76,15 @@ Accepted payload shape:
 }
 ```
 
-For large daily datasets, send multiple requests for the same `date` with different symbol subsets. Rows are upserted by `(symbol, trade_date)`, so repeated writes replace that symbol's data for that date. The normalized summary fields are stored in SQL columns, while the original per-symbol object is retained in `payload JSONB`.
+For 300 stocks and 10 option metrics, send one request for the full day or several smaller requests for the same `date`. The database stores one row per `symbol + trade_date`, so 300 stocks is 300 rows per day. Rows are upserted by `(symbol, trade_date)`, so repeated writes replace that symbol's data for that date. The normalized summary fields are stored in SQL columns, while the original per-symbol object is retained in `payload JSONB`.
+
+Historical option data for charts can be read with:
+
+```bash
+curl "https://bull-stock.xyz/api/options/history?symbols=AAPL,NVDA&days=30&metrics=iv,maxPain,putCallOiRatio"
+```
+
+The `metrics` parameter can use standard columns such as `iv`, `maxPain`, `callOpenInterest`, `putOpenInterest`, and `putCallOiRatio`, or any extra key stored in the per-symbol payload JSON.
 
 For the static fallback snapshot:
 

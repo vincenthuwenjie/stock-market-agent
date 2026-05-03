@@ -15,6 +15,7 @@ type OptionDailyRow = {
   put_open_interest: number | string | null;
   put_call_oi_ratio: number | string | null;
   expiration: string | null;
+  payload?: Record<string, unknown> | null;
 };
 
 export type OptionSqlWriteResult = {
@@ -22,6 +23,24 @@ export type OptionSqlWriteResult = {
   asOf: string;
   count: number;
   table: "option_daily";
+};
+
+export type OptionHistoryParams = {
+  symbols: string[];
+  metrics: string[];
+  days: number;
+};
+
+export type OptionHistoryPoint = {
+  date: string;
+  asOf: string | null;
+  values: Record<string, Scalar | string>;
+};
+
+export type OptionHistoryResult = {
+  days: number;
+  metrics: string[];
+  symbols: Record<string, OptionHistoryPoint[]>;
 };
 
 let sqlClient: SqlClient | null = null;
@@ -58,6 +77,14 @@ function numberScalar(value: number | string | null): Scalar {
 function integerScalar(value: number | string | null): Scalar {
   const parsed = numberScalar(value);
   return typeof parsed === "number" ? Math.round(parsed) : parsed;
+}
+
+function normalizeSymbol(value: string) {
+  return value.trim().replace(/^\$/, "").toUpperCase();
+}
+
+function normalizeMetric(value: string) {
+  return value.trim().replace(/[^a-zA-Z0-9_]/g, "");
 }
 
 async function ensureOptionSchema() {
@@ -154,6 +181,37 @@ function rowToSummary(row: OptionDailyRow): OptionSummary {
   };
 }
 
+const METRIC_COLUMNS: Record<string, keyof OptionDailyRow> = {
+  maxPain: "max_pain",
+  max_pain: "max_pain",
+  iv: "iv",
+  callOpenInterest: "call_open_interest",
+  call_open_interest: "call_open_interest",
+  putOpenInterest: "put_open_interest",
+  put_open_interest: "put_open_interest",
+  putCallOiRatio: "put_call_oi_ratio",
+  put_call_oi_ratio: "put_call_oi_ratio",
+  expiration: "expiration",
+};
+
+function historyMetricValue(row: OptionDailyRow, metric: string): Scalar | string {
+  const column = METRIC_COLUMNS[metric];
+  if (column) {
+    const value = row[column];
+    if (metric === "expiration") return typeof value === "string" ? value : "";
+    return numberScalar(typeof value === "number" || typeof value === "string" ? value : null);
+  }
+
+  const raw = row.payload?.[metric];
+  if (typeof raw === "number") return numberScalar(raw);
+  if (typeof raw === "string") {
+    const numeric = numberScalar(raw);
+    return numeric === "N/A" ? raw : numeric;
+  }
+  if (raw === null || raw === undefined) return "N/A";
+  return String(raw);
+}
+
 export async function readLatestSqlOptionSnapshot(statuses?: SourceStatus[]) {
   if (!hasDatabaseUrl()) {
     statuses?.push({ name: "postgres:options", status: "skipped", detail: "DATABASE_URL is not configured" });
@@ -183,4 +241,42 @@ export async function readLatestSqlOptionSnapshot(statuses?: SourceStatus[]) {
     statuses?.push({ name: "postgres:options", status: "missing", detail: error instanceof Error ? error.message : "failed to read option_daily" });
     return null;
   }
+}
+
+export async function readOptionSqlHistory(params: OptionHistoryParams): Promise<OptionHistoryResult> {
+  if (!hasDatabaseUrl()) throw new Error("DATABASE_URL is not configured");
+  const symbols = [...new Set(params.symbols.map(normalizeSymbol).filter(Boolean))].slice(0, 500);
+  const metrics = [...new Set(params.metrics.map(normalizeMetric).filter(Boolean))].slice(0, 50);
+  const days = Math.min(Math.max(Math.round(params.days || 30), 1), 365);
+
+  if (!symbols.length) throw new Error("symbols query parameter is required");
+  if (!metrics.length) throw new Error("metrics query parameter is required");
+
+  await ensureOptionSchema();
+  const sql = getSql();
+  const rows = await sql`
+    SELECT symbol, trade_date::text AS trade_date, as_of, source, max_pain, iv, call_open_interest, put_open_interest, put_call_oi_ratio, expiration, payload
+    FROM option_daily
+    WHERE symbol = ANY(${symbols}::text[])
+      AND trade_date >= (CURRENT_DATE - ${days - 1}::int)
+    ORDER BY symbol, trade_date
+  ` as OptionDailyRow[];
+
+  const result: OptionHistoryResult = {
+    days,
+    metrics,
+    symbols: Object.fromEntries(symbols.map((symbol) => [symbol, []])),
+  };
+
+  for (const row of rows) {
+    const values = Object.fromEntries(metrics.map((metric) => [metric, historyMetricValue(row, metric)]));
+    result.symbols[row.symbol] ??= [];
+    result.symbols[row.symbol].push({
+      date: row.trade_date,
+      asOf: row.as_of ? new Date(row.as_of).toISOString() : null,
+      values,
+    });
+  }
+
+  return result;
 }
