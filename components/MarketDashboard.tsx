@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MarketSnapshot, NewsItem, Scalar } from "@/lib/types";
 
 type Props = {
@@ -479,6 +479,7 @@ export function MarketDashboard({ initialData }: Props) {
   const [activeTicker, setActiveTicker] = useState(initialData.meta?.watchlist?.[0] ?? "AAPL");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lang, setLang] = useState<Lang>("zh");
+  const didInitialRefresh = useRef(false);
 
   async function refresh() {
     setIsRefreshing(true);
@@ -490,6 +491,12 @@ export function MarketDashboard({ initialData }: Props) {
       setIsRefreshing(false);
     }
   }
+
+  useEffect(() => {
+    if (didInitialRefresh.current) return;
+    didInitialRefresh.current = true;
+    void refresh();
+  }, []);
 
   useEffect(() => {
     const refreshSeconds = data.meta?.refreshSeconds ?? 300;
