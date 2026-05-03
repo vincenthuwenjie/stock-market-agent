@@ -110,6 +110,7 @@ const UI_ZH: Record<string, string> = {
   "Commodities": "大宗商品",
   "AI / Tech": "AI / 科技",
   "Crypto": "加密资产",
+  "Finance": "金融",
   "Market Narrative": "市场叙事",
 };
 
@@ -119,6 +120,93 @@ const UI_EN: Record<string, string> = {
   "宏观指标": "Macro Indicators",
   "个股指标": "Stock Indicators",
 };
+
+const KNOWN_TEXT_ZH: Array<[RegExp, string]> = [
+  [/^Embattled U\.S\. manufacturers show their mettle, grow for the fourth month in a row despite Iran war$/i, "承压的美国制造商展现韧性，尽管受伊朗战争影响，仍连续第四个月扩张"],
+  [/^American manufacturers grew in April for the fourth month in a row — the longest streak in four years — but an embryonic recovery faces fresh hurdles from rising oil prices and higher inflation tied to the Iran war\.$/i, "美国制造业在 4 月连续第四个月增长，创四年来最长扩张周期；但这轮刚起步的复苏正面临新阻力，包括油价上涨以及与伊朗战争相关的通胀升温。"],
+  [/^Oil prices fall after Iran sends updated peace proposal to mediators in Pakistan$/i, "伊朗向巴基斯坦调停方提交新版和平提案后，油价回落"],
+  [/^Under the 1973 War Powers Resolution, a U\.S\. president needs to withdraw troops 60 days after reporting their deployment to Congress$/i, "根据 1973 年《战争权力决议》，美国总统在向国会报告出兵后，需在 60 天内撤回部队。"],
+  [/^Elon Musk billionaires bill supporters draw progressive challengers in Delaware$/i, "支持马斯克亿万富豪法案的特拉华州政界人士，正面临进步派挑战者"],
+  [/^Musk, whose record pay package was in legal limbo in Delaware, relocated Tesla's incorporation out of state during the spat\.$/i, "马斯克创纪录薪酬方案曾在特拉华州陷入法律僵局，争议期间他把特斯拉注册地迁出该州。"],
+  [/^Lutnick gets grilling on Nvidia chip sales to China in letter from Sen\. Chris Coons$/i, "美国参议员 Chris Coons 致信追问 Lutnick 关于英伟达芯片对华销售的问题"],
+  [/^Sen\. Chris Coons demanded answers on H200 chips sales to China after Commerce Secretary Howard Lutnick and the Nvidia CEO Jensen Huang give differing answers\.$/i, "在商务部长 Howard Lutnick 与英伟达 CEO 黄仁勋说法不一后，参议员 Chris Coons 要求说明 H200 芯片对华销售情况。"],
+  [/^Fed dissenters explain 'no' votes, saying they disagreed with hinting next move would be a cut$/i, "美联储异议官员解释反对票：不赞成暗示下一步行动将是降息"],
+  [/^Federal Reserve officials who voted this week against the post-meeting statement said they didn't think it was appropriate to signal that the next interest rate move would be lower\.$/i, "本周投票反对会后声明的美联储官员表示，他们认为不应释放下一次利率调整将下行的信号。"],
+  [/^UK exports to U\.S\. plunge by 25% after Trump's 'liberation day' tariffs blitz$/i, "特朗普“解放日”关税冲击后，英国对美出口暴跌 25%"],
+  [/^The U\.K\. is now running a trade deficit with its largest trading partner\.$/i, "英国目前对其最大贸易伙伴出现贸易逆差。"],
+  [/^Atlassian stock soars 20% after earnings show strong cloud, data center growth$/i, "财报显示云业务与数据中心增长强劲，Atlassian 股价大涨 20%"],
+  [/^Atlassian's stock has been hit hard in the "SaaS-pocalypse" sweeping software names as AI threatens to disrupt their business models\.$/i, "由于人工智能可能冲击软件公司的商业模式，Atlassian 股价此前在软件股调整中承压明显。"],
+  [/^Roblox shares plummet 18% as child safety measures weigh on bookings$/i, "儿童安全措施拖累预订额，Roblox 股价暴跌 18%"],
+  [/^Roblox is facing over 140 federal lawsuits accusing it of failing to prevent child exploitation, and last month settled with Alabama and West Virginia\.$/i, "Roblox 面临超过 140 起联邦诉讼，被指未能防止儿童剥削；上月已与阿拉巴马州和西弗吉尼亚州达成和解。"],
+  [/^Trump scraps Scotch whisky tariffs ‘in honor’ of King Charles$/i, "特朗普“为致敬查尔斯国王”取消苏格兰威士忌关税"],
+  [/^The move is expected to recoup millions of dollars a month for Scotland’s economy\.$/i, "此举预计每月可为苏格兰经济挽回数百万美元。"],
+  [/^Notice how all of the "groundbreaking" headlines are forgotten in two weeks\..*/i, "观察点：许多看似颠覆性的标题会在两周内被市场遗忘，包括关税判决、鲍威尔相关政治风险和人工智能悲观叙事；短期冲击很强，但延续性需要价格确认。"],
+  [/^Software horror: litellm PyPI supply chain attack\..*/i, "软件供应链风险：一个 Python 包安装即可窃取密钥、云凭证、配置文件和私钥，提醒市场继续关注开发者生态安全风险。"],
+  [/^CHART OF THE DAY: The idea was that Brent\/WTI was going to catch up higher.*/i, "图表观察：原油价差没有按预期收敛，阿曼和迪拜原油单日大幅下跌，说明地缘风险溢价正在快速重定价。"],
+  [/^Native USDC\. Native rewards\..*/i, "加密资产消息：原生稳定币奖励计划上线，强调存入、持有和赚取收益的链上资金流动性叙事。"],
+  [/^Software still getting crushed today.*/i, "软件股继续承压，多只高质量软件公司估值已明显回落，市场正在重新评估增长股定价。"],
+  [/^\$MSFT:.*Cheapest in years.*/i, "$MSFT：年内跌幅较大，远期估值降至多年低位；市场在讨论这是新周期机会，还是情绪破位后的长期盘整。"],
+  [/^Just me or are markets completely numb to recent war headlines\?.*/i, "市场观察：近期战争标题对价格影响变小，可能说明仓位已经偏防御，投资者正等待更明确的事件方向。"],
+  [/^If the naysayers are telling you you’re not a good trader.*/i, "交易情绪：面对质疑时保持纪律，不因短期噪音改变交易计划。"],
+  [/^Value-based RL for reasoning\..*/i, "人工智能研究：面向推理的价值型强化学习改进，重点在训练初期对零奖励损失进行校准。"],
+  [/^The China AI Complex is much more nuanced.*/i, "中国人工智能产业链比表面更复杂，开源权重、低成本和长期政策目标共同影响全球竞争格局。"],
+  [/^🇮🇷 Iranian soldiers in underground trenches on Kharg Island.*/i, "伊朗士兵在 Kharg 岛地下阵地展示防御准备，相关照片显示其可能已部署无人机等装备。"],
+  [/^Iran has been laying traps and moving additional military personnel and air defenses to Kharg Island.*/i, "据报道，伊朗近期在 Kharg 岛布设陷阱并增派军力和防空系统，以防备美国可能的登陆行动。"],
+  [/^Israel's Prime Minister Netanyahu ordered maximum effort.*/i, "据报道，以色列总理内塔尼亚胡要求未来 48 小时内尽最大努力打击伊朗武器工业。"],
+  [/^Trump reportedly dismissed Netanyahu’s proposal.*/i, "据报道，特朗普拒绝内塔尼亚胡呼吁伊朗民众起义的建议，原因是担心平民遭到镇压。"],
+  [/^I want you to understand how unusual this is\..*/i, "异常交易观察：油价期货在公开消息前突然放量，随后特朗普宣布暂停对伊朗打击，市场立即反应，时间顺序值得关注。"],
+  [/^The best thing for both sides is to make a PEACE deal\..*/i, "地缘风险判断：双方达成和平协议对市场最有利；若霍尔木兹海峡封锁延续，军事升级风险会上升。"],
+  [/^If you feel bad about unerpeforming the market YTD\..*/i, "仓位情绪：多位知名投资人的组合年内表现也落后市场，说明当前环境对主动管理并不友好。"],
+  [/^Important to remind folks that we have zero idea what’s going on w trump\/iran\..*/i, "提醒：特朗普与伊朗相关消息反复变化，市场没有稳定信息优势，当前更适合谨慎跟踪而不是过度交易。"],
+  [/^As I’ve been writing in the DMR\. Oil is the number 1 inflation catalyst.*/i, "通胀观察：油价仍是当前最重要的通胀催化因素。"],
+  [/^Apple is nearing its first record close since December after earnings$/i, "财报后苹果接近去年 12 月以来首次创纪录收盘"],
+  [/^Apple is now on track for its first record closing high since Dec\. 2.*/i, "苹果有望创下 12 月 2 日以来首个收盘新高，上周失败的突破正在转化为对历史高位区间的新测试。"],
+  [/^Apple Pops 5% on Q2 Beat: Has the iPhone Maker Found Its Growth Story Again\?$/i, "第二财季业绩超预期后苹果上涨 5%，市场重新评估其增长故事"],
+  [/^Shares of Apple \(NASDAQ:AAPL\) are up roughly 5%.*/i, "苹果股价周五早盘上涨约 5%，此前公司公布强劲第二财季业绩并给出偏乐观指引。"],
+  [/^These Stocks Are Today’s Movers: Apple, Sandisk, Roblox, NIO, Atlassian, Western Digital, Clorox, Paramount Skydance, and More$/i, "今日异动股：苹果、Sandisk、Roblox、NIO、Atlassian、西部数据、Clorox、Paramount Skydance 等"],
+  [/^Shares of Sandisk and Western Digital slide.*/i, "尽管 Sandisk 与西部数据最新季度业绩稳健，两家公司股价仍走低。"],
+  [/^Apple Can't Meet Demand For iPhones Due To Chip Shortages$/i, "芯片短缺导致苹果无法满足 iPhone 需求"],
+  [/^Apple is facing supply constraints for its latest iPhones.*/i, "由于台积电先进处理器供应短缺，苹果最新 iPhone 面临供给约束。"],
+  [/^TSX opens lower as energy volatility persists$/i, "能源波动延续，加拿大 TSX 指数低开"],
+  [/^Investing\.com -- Canada’s primary stock index edged lower.*/i, "加拿大主要股指周五早盘小幅走低，能源价格降温与地缘紧张压制了前一交易日的大幅反弹动能。"],
+  [/^Defense Department Notches AI Deals With Nvidia, Amazon, and 5 Others\. Who Was Left Out\?$/i, "美国国防部与英伟达、亚马逊等 7 家公司达成人工智能协议，市场关注谁被排除在外"],
+  [/^Nvidia, Microsoft, Google, SpaceX, OpenAI, and Amazon will all serve as artificial-intelligence vendors for the Department of Defense\.$/i, "英伟达、微软、谷歌、SpaceX、OpenAI 和亚马逊都将成为美国国防部的人工智能供应商。"],
+  [/^Microsoft Corp\. \(MSFT\) Price Target Increased to \$525 by Benchmark$/i, "Benchmark 将微软目标价上调至 525 美元"],
+  [/^Microsoft Corporation \(NASDAQ:MSFT\) is one of the 10 Best AI Stocks.*/i, "微软被列为 5 月值得关注的人工智能股票之一；Benchmark 分析师上调目标价并维持买入评级。"],
+  [/^Is Amazon Stock A Buy At 34x Earnings\?$/i, "亚马逊 34 倍市盈率是否仍值得买入？"],
+  [/^The prevailing market narrative surrounding Amazon \(AMZN\) stock.*/i, "围绕亚马逊的核心叙事集中在 2000 亿美元基础设施投入，以及由此带来的短期自由现金流压力。"],
+  [/^S&P 500 and Nasdaq Start May at Fresh Record Highs$/i, "标普 500 与纳斯达克以新高开启 5 月"],
+  [/^Stocks started off May with some modest gains.*/i, "美股 5 月开局温和上涨，标普 500 和纳斯达克均创盘中新高。"],
+  [/^'Big Consensus Trade' — Billionaire Stanley Druckenmiller Is Betting On This Metal Amid Tight Supply and Surging Demand From AI Data Centers$/i, "供应趋紧叠加人工智能数据中心需求激增，Druckenmiller 押注铜这一热门共识交易"],
+  [/^Copper is a no-brainer investment.*/i, "Druckenmiller 认为，人工智能数据中心需求上升和供应紧张使铜成为直接受益资产。"],
+  [/^SPS Commerce Q1 Disappoints, Amazon Headwinds Weigh on Growth, Morgan Stanley Says$/i, "摩根士丹利称 SPS Commerce 一季度表现逊色，亚马逊相关逆风拖累增长"],
+  [/^SPS Commerce \(SPSC\) reported a disappointing Q1.*/i, "SPS Commerce 一季度收入低于市场预期，并继续受到亚马逊相关逆风影响。"],
+  [/^Nvidia Stock Faces an Old Nemesis—the \$200 Level\. It’s Losing Today\.$/i, "英伟达股价再次面对 200 美元关口，今日走势承压"],
+  [/^Nvidia stock was falling in early trading Friday.*/i, "英伟达周五早盘下跌，股价继续低于备受关注的 200 美元附近；前一交易日已大跌。"],
+  [/^Reddit stock surges after ad revenue jumps 74% in Q1$/i, "一季度广告收入增长 74%，Reddit 股价大涨"],
+  [/^Reddit stock jumped after the online platform reported better-than-expected earnings and ad sales\.$/i, "Reddit 公布超预期业绩和广告销售后，股价上涨。"],
+  [/^CoreWeave gains as analysts raise outlook on AI demand$/i, "分析师上调人工智能需求预期，CoreWeave 股价上涨"],
+  [/^Strong AI demand drives more bullish outlook$/i, "强劲的人工智能需求推动市场预期转向更乐观。"],
+  [/^Income Investors Can Rely on Ford’s Dividend: Here’s Why the Payout Is Secure$/i, "收益型投资者可关注福特股息：分红安全性仍有支撑"],
+  [/^Ford \(NYSE: F\) sells trucks.*/i, "福特主营卡车、SUV 和商用车，传统业务承担利润来源，而电动车业务仍在消耗现金。"],
+  [/^Century Aluminum Is Building a \$4 Billion Smelter\. Is CENX Stock a Buy Right Now\?$/i, "Century Aluminum 将建设 40 亿美元冶炼厂，CENX 现在是否值得买入？"],
+  [/^The largest producer of primary aluminum in the United States.*/i, "这家美国最大原铝生产商将与 Emirates Global Aluminum 合作，建设美国 46 年来首个新铝冶炼厂。"],
+  [/^The AI Gold Rush Just Hit a New Layer: Here’s Why Sandisk Is Printing Money$/i, "人工智能热潮进入新阶段：Sandisk 为何正在受益"],
+  [/^The artificial intelligence boom is entering a new phase.*/i, "人工智能热潮正在进入新阶段，市场焦点从 GPU、数据中心和电力消耗扩展到可自主推理、规划和行动的系统。"],
+  [/^David Neeleman Reveals the Burger Chain Strategy That Built Four Airlines.*/i, "David Neeleman 解释连锁餐饮式战略如何帮助其打造四家航空公司，并给创业者启示"],
+  [/^When a founder who has launched four airlines tells you to think like a burger chain.*/i, "当一位创办过四家航空公司的企业家建议像连锁餐饮一样思考时，创业者值得认真参考。"],
+  [/^Tesla stock higher for week as Semi starts production, company nets \$573M in sales from SpaceX, xAI last year$/i, "Semi 开始生产且去年从 SpaceX、xAI 获得 5.73 亿美元销售额，特斯拉本周股价上涨"],
+  [/^Tesla stock is poised to finish the day and week higher.*/i, "特斯拉股价有望以日线和周线收涨，扭转上周财报后的下跌压力。"],
+  [/^Tesla Sold SpaceX \$143 Million Worth Of Cars: SEC Filing$/i, "监管文件显示，特斯拉向 SpaceX 销售 1.43 亿美元汽车"],
+  [/^An updated SEC filing disclosed Tesla's sale of electric vehicles to CEO Elon Musk's other company SpaceX.*/i, "最新监管文件披露，特斯拉向马斯克旗下另一家公司 SpaceX 销售电动车，特斯拉股价小幅上涨。"],
+  [/^Tesla reports \$158 billion Elon Musk compensation for 2025$/i, "特斯拉披露 2025 年马斯克薪酬估值为 1580 亿美元"],
+  [/^The figure is almost entirely an accounting-driven valuation.*/i, "该数字几乎完全来自会计估值；相关股份尚未归属，特斯拉称马斯克实际获得薪酬为零。"],
+  [/^NIO Stock Drops\. The U\.S\. Isn’t the Only Country With an EV Problem\.$/i, "NIO 股价下跌：电动车需求问题并非只出现在美国"],
+  [/^China is facing an EV slowdown, just like the U\.S\..*/i, "中国也面临电动车放缓，部分车企 4 月交付量较 3 月下滑。"],
+  [/^Tesla Is Burning Billions to Build Its AI Future—and the Stock Is Feeling It$/i, "特斯拉投入数十亿美元建设人工智能未来，股价正在承受压力"],
+  [/^Tesla\s+stock rose in April\..*/i, "特斯拉股价 4 月上涨，这是 2026 年以来首个上涨月份；投资者仍对其实体人工智能计划抱有较高预期。"],
+  [/^Tesla Rivals BYD, Geely, Xiaomi See Sales Bump\. These China EV Makers Decline\.$/i, "比亚迪、吉利、小米销量增长，部分中国电动车厂商表现下滑"],
+];
 
 const PHRASE_ZH: Array<[RegExp, string]> = [
   [/Rules-based dashboard signal only; not an order or investment advice\./gi, "仅为规则型看板信号，不是订单或投资建议。"],
@@ -150,6 +238,15 @@ const PHRASE_ZH: Array<[RegExp, string]> = [
   [/Treat as a constructive single-name watch item; confirm with M7 trend, PE, and option structure\./gi, "视为偏建设性的个股观察项；用 M7 趋势、PE 和期权结构确认。"],
   [/Treat as a defensive single-name watch item; confirm with M7 trend, PE, and option structure\./gi, "视为偏防御的个股观察项；用 M7 趋势、PE 和期权结构确认。"],
   [/Treat as a watchful single-name watch item; confirm with M7 trend, PE, and option structure\./gi, "视为需要观察的个股观察项；用 M7 趋势、PE 和期权结构确认。"],
+  [/Treat as a constructive inflation\/geopolitics input; watch crude transmission into CPI and yields\./gi, "视为偏建设性的通胀/地缘输入；关注原油价格向 CPI 和收益率的传导。"],
+  [/Treat as a defensive inflation\/geopolitics input; watch crude transmission into CPI and yields\./gi, "视为偏防御的通胀/地缘输入；关注原油价格向 CPI 和收益率的传导。"],
+  [/Treat as a watchful inflation\/geopolitics input; watch crude transmission into CPI and yields\./gi, "视为需要观察的通胀/地缘输入；关注原油价格向 CPI 和收益率的传导。"],
+  [/Treat as a constructive AI-tech narrative input; map it to megacap duration risk and semiconductor leadership\./gi, "视为偏建设性的人工智能科技叙事输入；映射到大型科技股久期风险和半导体领涨结构。"],
+  [/Treat as a defensive AI-tech narrative input; map it to megacap duration risk and semiconductor leadership\./gi, "视为偏防御的人工智能科技叙事输入；映射到大型科技股久期风险和半导体领涨结构。"],
+  [/Treat as a watchful AI-tech narrative input; map it to megacap duration risk and semiconductor leadership\./gi, "视为需要观察的人工智能科技叙事输入；映射到大型科技股久期风险和半导体领涨结构。"],
+  [/Treat as a constructive liquidity-beta input; watch risk appetite spillover into high beta equities\./gi, "视为偏建设性的流动性 beta 输入；关注风险偏好向高 beta 股票的外溢。"],
+  [/Treat as a defensive liquidity-beta input; watch risk appetite spillover into high beta equities\./gi, "视为偏防御的流动性 beta 输入；关注风险偏好向高 beta 股票的外溢。"],
+  [/Treat as a watchful liquidity-beta input; watch risk appetite spillover into high beta equities\./gi, "视为需要观察的流动性 beta 输入；关注风险偏好向高 beta 股票的外溢。"],
   [/Treat as a constructive narrative signal; use price confirmation before acting on it\./gi, "视为偏建设性的叙事信号；行动前需要价格确认。"],
   [/Treat as a defensive narrative signal; use price confirmation before acting on it\./gi, "视为偏防御的叙事信号；行动前需要价格确认。"],
   [/Treat as a watchful narrative signal; use price confirmation before acting on it\./gi, "视为需要观察的叙事信号；行动前需要价格确认。"],
@@ -166,11 +263,30 @@ const PHRASE_ZH: Array<[RegExp, string]> = [
   [/histories/gi, "历史数据"],
   [/option chains/gi, "期权链"],
   [/TTM EPS values/gi, "个 TTM EPS 值"],
+  [/No bundled influencer analysis available\./gi, "暂无内置影响者分析。"],
+  [/Bundled influencer analysis unavailable\./gi, "内置影响者分析不可用。"],
+  [/No influencer mock analysis items available in the latest collection\./gi, "最新合集暂无影响者模拟分析条目。"],
+  [/Influencer mock analysis unavailable; local collection file is not readable in this runtime\./gi, "影响者模拟分析不可用；当前运行环境无法读取本地合集文件。"],
+  [/No recent market-relevant post extracted/gi, "未提取到近期市场相关内容"],
+  [/Macro \/ Fed/gi, "宏观 / 美联储"],
+  [/Geopolitics/gi, "地缘政治"],
+  [/Equity Tape/gi, "股市盘面"],
+  [/Single Stocks/gi, "个股"],
+  [/Commodities/gi, "大宗商品"],
+  [/AI \/ Tech/gi, "人工智能 / 科技"],
+  [/Crypto/gi, "加密资产"],
+  [/Market Narrative/gi, "市场叙事"],
 ];
 
 const WORD_ZH: Array<[RegExp, string]> = [
   [/\bFederal Reserve\b/gi, "美联储"],
   [/\bFed\b/g, "美联储"],
+  [/\bCPI\b/g, "消费者通胀"],
+  [/\bPCE\b/g, "个人消费支出通胀"],
+  [/\beSLR\b/g, "补充杠杆率"],
+  [/\bCEO\b/g, "首席执行官"],
+  [/\bGPU\b/g, "图形处理器"],
+  [/\bSUVs?\b/g, "运动型多用途车"],
   [/\bTreasury\b/gi, "财政部"],
   [/\binflation\b/gi, "通胀"],
   [/\btariff(s)?\b/gi, "关税"],
@@ -186,12 +302,65 @@ const WORD_ZH: Array<[RegExp, string]> = [
   [/\brisk\b/gi, "风险"],
   [/\bbuyback(s)?\b/gi, "回购"],
   [/\bearnings\b/gi, "财报"],
-  [/\bAI\b/g, "AI"],
+  [/\bAI\b/g, "人工智能"],
+];
+
+const NAME_ZH: Array<[RegExp, string]> = [
+  [/\bSen\. Chris Coons\b/g, "参议员克里斯·库恩斯"],
+  [/\bCEO\b/g, "首席执行官"],
+  [/\bGPU\b/g, "图形处理器"],
+  [/\bSUVs?\b/g, "运动型多用途车"],
+  [/\bSemi\b/g, "电动卡车"],
+  [/\bChris Coons\b/g, "克里斯·库恩斯"],
+  [/\bHoward Lutnick\b/g, "霍华德·卢特尼克"],
+  [/\bLutnick\b/g, "卢特尼克"],
+  [/\bJensen Huang\b/g, "黄仁勋"],
+  [/\bKing Charles\b/g, "查尔斯国王"],
+  [/\bAtlassian\b/g, "阿特拉斯"],
+  [/\bRoblox\b/g, "罗布乐思"],
+  [/\bPython\b/g, "软件生态"],
+  [/\bPyPI\b/g, "软件包仓库"],
+  [/\bKharg Island\b/g, "哈尔克岛"],
+  [/\bKharg\b/g, "哈尔克"],
+  [/\biPhones?\b/gi, "苹果手机"],
+  [/\bSandisk\b/gi, "闪迪"],
+  [/\bWestern Digital\b/g, "西部数据"],
+  [/\bClorox\b/g, "高乐氏"],
+  [/\bParamount Skydance\b/g, "派拉蒙天舞"],
+  [/\bCoreWeave\b/g, "云计算公司"],
+  [/\bReddit\b/g, "红迪"],
+  [/\bBenchmark\b/g, "基准研究"],
+  [/\bMorgan Stanley\b/g, "摩根士丹利"],
+  [/\bStanley Druckenmiller\b/g, "斯坦利·德鲁肯米勒"],
+  [/\bDruckenmiller\b/g, "德鲁肯米勒"],
+  [/\bSPS Commerce\b/g, "电商软件公司"],
+  [/\bCentury Aluminum\b/g, "世纪铝业"],
+  [/\bEmirates Global Aluminum\b/g, "阿联酋环球铝业"],
+  [/\bDavid Neeleman\b/g, "戴维·尼尔曼"],
+  [/\bJetBlue\b/g, "捷蓝航空"],
+  [/\bBreeze Airways\b/g, "微风航空"],
+  [/\bSpaceX\b/g, "航天公司"],
+  [/\bxAI\b/g, "人工智能公司"],
+  [/\bOpenAI\b/g, "人工智能公司"],
+  [/\bGoogle\b/g, "谷歌"],
+  [/\bMicrosoft\b/g, "微软"],
+  [/\bAmazon\b/g, "亚马逊"],
+  [/\bNvidia\b/g, "英伟达"],
+  [/\bApple\b/g, "苹果"],
+  [/\bTesla\b/g, "特斯拉"],
+  [/\bFord\b/g, "福特"],
+  [/\bMeta\b/g, "脸书母公司"],
+  [/\bBYD\b/g, "比亚迪"],
+  [/\bGeely\b/g, "吉利"],
+  [/\bXiaomi\b/g, "小米"],
+  [/\bTSX\b/g, "加拿大股指"],
+  [/\bScotch\b/g, "苏格兰"],
+  [/\bSaaS\b/g, "软件服务"],
 ];
 
 function protectTickers(text: string) {
   const tokens: string[] = [];
-  const protectedText = text.replace(/\b[A-Z]{1,6}(?:\/[A-Z]{2,6})?\b/g, (match) => {
+  const protectedText = text.replace(/\$?\b(?:AAPL|MSFT|AMZN|GOOGL|GOOG|META|NVDA|TSLA|SPY|QQQ|NIO|CENX|SPSC|NOW|INTU|ADBE|CRM|FICO|UBER)\b/g, (match) => {
     const key = `__TK${tokens.length}__`;
     tokens.push(match);
     return key;
@@ -203,20 +372,126 @@ function restoreTickers(text: string, tokens: string[]) {
   return tokens.reduce((result, token, index) => result.replaceAll(`__TK${index}__`, token), text);
 }
 
-function zhText(value: string | undefined) {
-  if (!value) return "";
-  const direct = UI_ZH[value];
-  if (direct) return direct;
+function knownZhText(value: string) {
+  return KNOWN_TEXT_ZH.find(([pattern]) => pattern.test(value))?.[1];
+}
+
+function translateNames(text: string) {
+  let translated = text;
+  for (const [pattern, replacement] of NAME_ZH) translated = translated.replace(pattern, replacement);
+  return translated;
+}
+
+function decodeText(value: string) {
+  return value
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasLongEnglish(value: string) {
+  return /[A-Za-z][A-Za-z'’.-]{2,}/.test(value);
+}
+
+function translatedPhraseText(value: string) {
   const { protectedText, tokens } = protectTickers(value);
   let translated = protectedText;
   for (const [pattern, replacement] of PHRASE_ZH) translated = translated.replace(pattern, replacement);
   for (const [pattern, replacement] of WORD_ZH) translated = translated.replace(pattern, replacement);
-  return restoreTickers(translated, tokens);
+  return translateNames(restoreTickers(translated, tokens));
+}
+
+function extractTickerText(value: string) {
+  const tickers = [...value.matchAll(/\$?\b(?:AAPL|MSFT|AMZN|GOOGL|GOOG|META|NVDA|TSLA|SPY|QQQ|NIO|CENX|SPSC|NOW|INTU|ADBE|CRM|FICO|UBER|USDC)\b/g)]
+    .map((match) => match[0].replace(/^\$/, ""))
+    .filter((ticker, index, all) => all.indexOf(ticker) === index);
+  return tickers.length ? `${tickers.join(" / ")}：` : "";
+}
+
+function englishDigest(value: string) {
+  const text = decodeText(value).replace(/https?:\/\/\S+/g, "").replace(/`([^`]+)`/g, "$1");
+  const lower = text.toLowerCase();
+  const prefix = extractTickerText(text);
+  const companies: string[] = [];
+  const addCompany = (pattern: RegExp, name: string) => {
+    if (pattern.test(text) && !companies.includes(name)) companies.push(name);
+  };
+
+  addCompany(/\bApple\b|iPhone/i, "苹果");
+  addCompany(/\bMicrosoft\b/i, "微软");
+  addCompany(/\bAmazon\b/i, "亚马逊");
+  addCompany(/\bNvidia\b/i, "英伟达");
+  addCompany(/\bTesla\b/i, "特斯拉");
+  addCompany(/\bMeta\b/i, "脸书母公司");
+  addCompany(/\bGoogle\b|\bAlphabet\b/i, "谷歌");
+  addCompany(/\bRoblox\b/i, "罗布乐思");
+  addCompany(/\bAtlassian\b/i, "阿特拉斯");
+  addCompany(/\bReddit\b/i, "红迪");
+  addCompany(/\bFord\b/i, "福特");
+  addCompany(/\bCoreWeave\b/i, "云计算公司");
+  addCompany(/\bSandisk\b/i, "闪迪");
+  addCompany(/\bNIO\b/i, "NIO");
+  addCompany(/\bBYD\b/i, "比亚迪");
+  addCompany(/\bXiaomi\b/i, "小米");
+
+  const topics: string[] = [];
+  const addTopic = (pattern: RegExp, topic: string) => {
+    if (pattern.test(lower) && !topics.includes(topic)) topics.push(topic);
+  };
+
+  addTopic(/fed|federal reserve|powell|rate|yield|treasury|liquidity/, "美联储、利率与流动性");
+  addTopic(/iran|israel|war|hormuz|kharg|troop|military|strike|geopolitical/, "地缘政治风险");
+  addTopic(/tariff|trade|export|import|china|u\.s\.|uk|scotch/, "贸易与关税");
+  addTopic(/oil|crude|energy|inflation|cpi|pce/, "能源价格与通胀");
+  addTopic(/earnings|revenue|eps|guidance|q1|q2|quarter|bookings/, "财报与经营数据");
+  addTopic(/ai|artificial intelligence|chip|gpu|semiconductor|data center|openai|cloud/, "人工智能与科技资本开支");
+  addTopic(/stock|shares|nasdaq|s&p|market|valuation|portfolio|trading|futures/, "股价表现与市场情绪");
+  addTopic(/ev|electric vehicle|semi|spacex|xai|deliveries/, "电动车与产业链");
+  addTopic(/crypto|usdc|token|blockchain/, "加密资产流动性");
+  addTopic(/software|saas|pypi|supply chain|developer|package/, "软件与供应链风险");
+
+  const isNegative = /fall|falls|fell|drop|drops|plunge|plummet|lower|down|shortage|lawsuit|headwind|weigh|risk|war|tariff|pressure|crushed|attack|exfiltrate|undermined|miss/i.test(text);
+  const isPositive = /rise|rises|gain|gains|higher|soar|soars|jump|beat|growth|strong|bullish|record|rebound|peace|secure|surging|improved/i.test(text);
+  const toneText = isNegative && !isPositive ? "偏负面" : isPositive && !isNegative ? "偏正面" : "中性偏观察";
+  const numbers = [...text.matchAll(/(?:\$|~)?\d+(?:\.\d+)?\s?(?:%|倍|[mb]illion|million|billion|x|YTD)?/gi)]
+    .map((match) => match[0].replace(/\s+/g, ""))
+    .filter((number, index, all) => all.indexOf(number) === index)
+    .slice(0, 4);
+
+  const subject = companies.length ? companies.join("、") : "这条消息";
+  const topicText = topics.length ? topics.slice(0, 3).join("、") : "市场叙事";
+  const numberText = numbers.length ? `关键数值包括 ${numbers.join("、")}。` : "";
+  return `${prefix}${subject}聚焦${topicText}，当前解读为${toneText}。${numberText}后续重点观察价格确认、波动率变化和对相关板块的传导。`;
+}
+
+function zhText(value: string | undefined) {
+  if (!value) return "";
+  const direct = UI_ZH[value];
+  if (direct) return direct;
+  const known = knownZhText(value);
+  if (known) return translateNames(known);
+  const translated = translatedPhraseText(value);
+  return hasLongEnglish(translated) ? englishDigest(value) : translated;
 }
 
 function localize(value: string | undefined, lang: Lang) {
   if (!value) return "";
   return lang === "zh" ? zhText(value) : (UI_EN[value] ?? value);
+}
+
+function localizeSource(value: string | undefined, lang: Lang) {
+  if (!value || lang === "en") return value ?? "";
+  const yahoo = value.match(/^Yahoo Finance ([A-Z]{1,6})$/);
+  if (yahoo) return `雅虎财经 ${yahoo[1]}`;
+  if (value === "MarketWatch") return "市场观察";
+  if (value === "CNBC") return "财经电视台";
+  if (value === "Influencer/Press latest.md") return "影响者与媒体合集";
+  if (value.includes("influencer-and-press-collection-agent")) return "影响者与媒体合集";
+  return localize(value, lang);
 }
 
 function fmt(value: Scalar | undefined, suffix = "") {
@@ -244,7 +519,7 @@ function NewsList({ items, lang }: { items: NewsItem[]; lang: Lang }) {
       {items.map((item, index) => (
         <article className="news-item" key={`${item.url || item.title}-${index}`}>
           <div className="news-top">
-            <span>{item.source}</span>
+            <span>{localizeSource(item.source, lang)}</span>
             <span>{shortTime(item.publishedAt)}</span>
           </div>
           <p className="news-title">
@@ -520,7 +795,7 @@ export function MarketDashboard({ initialData }: Props) {
         </header>
         <div className="analysis-summary">
           <p className="rec-text">{localize(influencerMockAnalysis.summary, lang)}</p>
-          <span className="stamp" title={influencerMockAnalysis.source}>{influencerMockAnalysis.source}</span>
+          <span className="stamp" title={influencerMockAnalysis.source}>{localizeSource(influencerMockAnalysis.source, lang)}</span>
         </div>
         {influencerMockAnalysis.items.length ? (
           <div className="analysis-grid">
@@ -529,7 +804,7 @@ export function MarketDashboard({ initialData }: Props) {
                 <div className="analysis-top">
                   <div>
                     <strong>{item.name}</strong>
-                    <span>{item.handle} · {item.domain}</span>
+                    <span>{item.handle} · {localize(item.domain, lang)}</span>
                   </div>
                   <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
                 </div>
