@@ -84,6 +84,31 @@ h1 {
   overflow-x: auto;
 }
 
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.language-toggle button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.language-toggle button.active {
+  color: var(--ink);
+}
+
 .pill,
 .refresh {
   display: inline-flex;
