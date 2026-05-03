@@ -124,6 +124,7 @@ const UI_EN: Record<string, string> = {
 const KNOWN_TEXT_ZH: Array<[RegExp, string]> = [
   [/^Embattled U\.S\. manufacturers show their mettle, grow for the fourth month in a row despite Iran war$/i, "承压的美国制造商展现韧性，尽管受伊朗战争影响，仍连续第四个月扩张"],
   [/^American manufacturers grew in April for the fourth month in a row — the longest streak in four years — but an embryonic recovery faces fresh hurdles from rising oil prices and higher inflation tied to the Iran war\.$/i, "美国制造业在 4 月连续第四个月增长，创四年来最长扩张周期；但这轮刚起步的复苏正面临新阻力，包括油价上涨以及与伊朗战争相关的通胀升温。"],
+  [/^The U\.S\.-Iran war is coming for your credit score and mortgage application$/i, "美伊战争正在影响你的信用评分和房贷申请"],
   [/^Oil prices fall after Iran sends updated peace proposal to mediators in Pakistan$/i, "伊朗向巴基斯坦调停方提交新版和平提案后，油价回落"],
   [/^Under the 1973 War Powers Resolution, a U\.S\. president needs to withdraw troops 60 days after reporting their deployment to Congress$/i, "根据 1973 年《战争权力决议》，美国总统在向国会报告出兵后，需在 60 天内撤回部队。"],
   [/^Elon Musk billionaires bill supporters draw progressive challengers in Delaware$/i, "支持马斯克亿万富豪法案的特拉华州政界人士，正面临进步派挑战者"],
