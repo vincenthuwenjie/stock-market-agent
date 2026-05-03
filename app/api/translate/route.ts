@@ -139,6 +139,9 @@ const POST_TRANSLATE_ZH: Array<[RegExp, string]> = [
   [/\bGLW\b/g, "GLW"],
   [/\beVTOL\b/g, "电动垂直起降飞行器"],
   [/\bRye\b/g, "莱伊"],
+  [/\bdiscussed the firm\b/gi, "讨论了该公司"],
+  [/\bdiscussed\b/gi, "讨论了"],
+  [/\bthe firm\b/gi, "该公司"],
   [/\bCT\b/g, "CT"],
   [/\bAI\b/g, "人工智能"],
 ];
