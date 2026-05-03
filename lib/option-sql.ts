@@ -6,7 +6,7 @@ type SqlClient = ReturnType<typeof neon>;
 
 type OptionDailyRow = {
   symbol: string;
-  trade_date: string | Date;
+  trade_date: string;
   as_of: string | Date | null;
   source: string | null;
   max_pain: number | string | null;
@@ -42,8 +42,7 @@ function getSql() {
   return sqlClient;
 }
 
-function dateOnly(value: string | Date) {
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
+function dateOnly(value: string) {
   return String(value).slice(0, 10);
 }
 
@@ -165,7 +164,7 @@ export async function readLatestSqlOptionSnapshot(statuses?: SourceStatus[]) {
     await ensureOptionSchema();
     const sql = getSql();
     const rows = await sql`
-      SELECT symbol, trade_date, as_of, source, max_pain, iv, call_open_interest, put_open_interest, put_call_oi_ratio, expiration
+      SELECT symbol, trade_date::text AS trade_date, as_of, source, max_pain, iv, call_open_interest, put_open_interest, put_call_oi_ratio, expiration
       FROM option_daily
       WHERE trade_date = (SELECT max(trade_date) FROM option_daily)
       ORDER BY symbol
