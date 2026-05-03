@@ -382,21 +382,6 @@ function translateNames(text: string) {
   return translated;
 }
 
-function decodeText(value: string) {
-  return value
-    .replace(/&gt;/g, ">")
-    .replace(/&lt;/g, "<")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function hasLongEnglish(value: string) {
-  return /[A-Za-z][A-Za-z'’.-]{2,}/.test(value);
-}
-
 function translatedPhraseText(value: string) {
   const { protectedText, tokens } = protectTickers(value);
   let translated = protectedText;
@@ -405,77 +390,13 @@ function translatedPhraseText(value: string) {
   return translateNames(restoreTickers(translated, tokens));
 }
 
-function extractTickerText(value: string) {
-  const tickers = [...value.matchAll(/\$?\b(?:AAPL|MSFT|AMZN|GOOGL|GOOG|META|NVDA|TSLA|SPY|QQQ|NIO|CENX|SPSC|NOW|INTU|ADBE|CRM|FICO|UBER|USDC)\b/g)]
-    .map((match) => match[0].replace(/^\$/, ""))
-    .filter((ticker, index, all) => all.indexOf(ticker) === index);
-  return tickers.length ? `${tickers.join(" / ")}：` : "";
-}
-
-function englishDigest(value: string) {
-  const text = decodeText(value).replace(/https?:\/\/\S+/g, "").replace(/`([^`]+)`/g, "$1");
-  const lower = text.toLowerCase();
-  const prefix = extractTickerText(text);
-  const companies: string[] = [];
-  const addCompany = (pattern: RegExp, name: string) => {
-    if (pattern.test(text) && !companies.includes(name)) companies.push(name);
-  };
-
-  addCompany(/\bApple\b|iPhone/i, "苹果");
-  addCompany(/\bMicrosoft\b/i, "微软");
-  addCompany(/\bAmazon\b/i, "亚马逊");
-  addCompany(/\bNvidia\b/i, "英伟达");
-  addCompany(/\bTesla\b/i, "特斯拉");
-  addCompany(/\bMeta\b/i, "脸书母公司");
-  addCompany(/\bGoogle\b|\bAlphabet\b/i, "谷歌");
-  addCompany(/\bRoblox\b/i, "罗布乐思");
-  addCompany(/\bAtlassian\b/i, "阿特拉斯");
-  addCompany(/\bReddit\b/i, "红迪");
-  addCompany(/\bFord\b/i, "福特");
-  addCompany(/\bCoreWeave\b/i, "云计算公司");
-  addCompany(/\bSandisk\b/i, "闪迪");
-  addCompany(/\bNIO\b/i, "NIO");
-  addCompany(/\bBYD\b/i, "比亚迪");
-  addCompany(/\bXiaomi\b/i, "小米");
-
-  const topics: string[] = [];
-  const addTopic = (pattern: RegExp, topic: string) => {
-    if (pattern.test(lower) && !topics.includes(topic)) topics.push(topic);
-  };
-
-  addTopic(/fed|federal reserve|powell|rate|yield|treasury|liquidity/, "美联储、利率与流动性");
-  addTopic(/iran|israel|war|hormuz|kharg|troop|military|strike|geopolitical/, "地缘政治风险");
-  addTopic(/tariff|trade|export|import|china|u\.s\.|uk|scotch/, "贸易与关税");
-  addTopic(/oil|crude|energy|inflation|cpi|pce/, "能源价格与通胀");
-  addTopic(/earnings|revenue|eps|guidance|q1|q2|quarter|bookings/, "财报与经营数据");
-  addTopic(/ai|artificial intelligence|chip|gpu|semiconductor|data center|openai|cloud/, "人工智能与科技资本开支");
-  addTopic(/stock|shares|nasdaq|s&p|market|valuation|portfolio|trading|futures/, "股价表现与市场情绪");
-  addTopic(/ev|electric vehicle|semi|spacex|xai|deliveries/, "电动车与产业链");
-  addTopic(/crypto|usdc|token|blockchain/, "加密资产流动性");
-  addTopic(/software|saas|pypi|supply chain|developer|package/, "软件与供应链风险");
-
-  const isNegative = /fall|falls|fell|drop|drops|plunge|plummet|lower|down|shortage|lawsuit|headwind|weigh|risk|war|tariff|pressure|crushed|attack|exfiltrate|undermined|miss/i.test(text);
-  const isPositive = /rise|rises|gain|gains|higher|soar|soars|jump|beat|growth|strong|bullish|record|rebound|peace|secure|surging|improved/i.test(text);
-  const toneText = isNegative && !isPositive ? "偏负面" : isPositive && !isNegative ? "偏正面" : "中性偏观察";
-  const numbers = [...text.matchAll(/(?:\$|~)?\d+(?:\.\d+)?\s?(?:%|倍|[mb]illion|million|billion|x|YTD)?/gi)]
-    .map((match) => match[0].replace(/\s+/g, ""))
-    .filter((number, index, all) => all.indexOf(number) === index)
-    .slice(0, 4);
-
-  const subject = companies.length ? companies.join("、") : "这条消息";
-  const topicText = topics.length ? topics.slice(0, 3).join("、") : "市场叙事";
-  const numberText = numbers.length ? `关键数值包括 ${numbers.join("、")}。` : "";
-  return `${prefix}${subject}聚焦${topicText}，当前解读为${toneText}。${numberText}后续重点观察价格确认、波动率变化和对相关板块的传导。`;
-}
-
 function zhText(value: string | undefined) {
   if (!value) return "";
   const direct = UI_ZH[value];
   if (direct) return direct;
   const known = knownZhText(value);
   if (known) return translateNames(known);
-  const translated = translatedPhraseText(value);
-  return hasLongEnglish(translated) ? englishDigest(value) : translated;
+  return translatedPhraseText(value);
 }
 
 function localize(value: string | undefined, lang: Lang) {
