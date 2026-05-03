@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { writeOptionSnapshot } from "@/lib/option-blob";
+import { writeOptionSqlSnapshot } from "@/lib/option-sql";
 import { requireWriteToken } from "@/lib/write-auth";
 
 export const dynamic = "force-dynamic";
@@ -11,14 +11,14 @@ export async function POST(request: Request) {
 
   try {
     const payload = await request.json();
-    const result = await writeOptionSnapshot(payload);
+    const result = await writeOptionSqlSnapshot(payload);
     return NextResponse.json({
       ok: true,
       ...result,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "failed to write option data";
-    const status = message.includes("BLOB_READ_WRITE_TOKEN") ? 503 : 400;
+    const status = message.includes("DATABASE_URL") ? 503 : 400;
     return NextResponse.json({ ok: false, error: message }, { status });
   }
 }

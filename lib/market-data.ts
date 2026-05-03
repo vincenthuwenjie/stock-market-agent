@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 import config from "@/config.json";
-import { readLatestOptionSnapshot } from "@/lib/option-blob";
+import { readLatestSqlOptionSnapshot } from "@/lib/option-sql";
 import type { InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator } from "@/lib/types";
 
 const MISSING: Scalar = "N/A";
@@ -800,12 +800,12 @@ export async function getMarketSnapshot(): Promise<MarketSnapshot> {
   const statuses: SourceStatus[] = [];
   const symbols = [...new Set([...WATCHLIST, ...ETF_SYMBOLS, ...config.indexConstituentSamples.SPY, ...config.indexConstituentSamples.QQQ])];
 
-  const [macroNews, stockNews, influencerMockAnalysis, marketData, blobOptions, vix, vxn, bonds, fx, liquidity] = await Promise.all([
+  const [macroNews, stockNews, influencerMockAnalysis, marketData, sqlOptions, vix, vxn, bonds, fx, liquidity] = await Promise.all([
     collectMacroNews(statuses),
     collectStockNews(statuses),
     collectInfluencerMockAnalysis(statuses),
     collectNasdaqData(symbols, [...WATCHLIST, ...ETF_SYMBOLS], statuses),
-    readLatestOptionSnapshot(statuses),
+    readLatestSqlOptionSnapshot(statuses),
     fetchCboeIndex("VIX", statuses),
     fetchCboeIndex("VXN", statuses),
     fetchTreasuryCurve(statuses),
@@ -813,15 +813,15 @@ export async function getMarketSnapshot(): Promise<MarketSnapshot> {
     fetchFedLiquidity(statuses),
   ]);
 
-  if (blobOptions) {
+  if (sqlOptions) {
     marketData.options = {
       ...marketData.options,
-      ...blobOptions.options,
+      ...sqlOptions.options,
     };
   }
 
   statuses.push(status("ibkr-tws", "skipped", "not available in Vercel runtime"));
-  statuses.push(status("option-opinion", "skipped", blobOptions ? "not available in Vercel runtime; Vercel Blob option data used when present" : "not available in Vercel runtime; Nasdaq option-chain used"));
+  statuses.push(status("option-opinion", "skipped", sqlOptions ? "not available in Vercel runtime; Postgres option_daily used when present" : "not available in Vercel runtime; Nasdaq option-chain used"));
 
   const stockIndicators = Object.fromEntries(WATCHLIST.map((symbol) => [symbol, buildStockIndicator(marketData, symbol)]));
   const macroIndicators = {

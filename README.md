@@ -16,23 +16,38 @@ The dynamic API uses live RSS news plus Nasdaq quotes/history/options, Nasdaq EP
 
 ## Partner Option Data
 
-Production option data is persisted in Vercel Blob as private JSON files:
+Production option data is persisted in Postgres, intended for Neon on Vercel:
 
-```text
-options/latest.json
-options/YYYY-MM-DD.json
+```sql
+CREATE TABLE IF NOT EXISTS option_daily (
+  id BIGSERIAL PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  trade_date DATE NOT NULL,
+  as_of TIMESTAMPTZ,
+  source TEXT NOT NULL DEFAULT 'partner option sql',
+  max_pain DOUBLE PRECISION,
+  iv DOUBLE PRECISION,
+  call_open_interest BIGINT,
+  put_open_interest BIGINT,
+  put_call_oi_ratio DOUBLE PRECISION,
+  expiration TEXT,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (symbol, trade_date)
+);
 ```
 
-`/api/snapshot` reads `options/latest.json` first and uses those option summaries ahead of the Nasdaq option-chain fallback.
+`/api/snapshot` reads the latest `trade_date` from `option_daily` first and uses those option summaries ahead of the Nasdaq option-chain fallback. The table is created automatically by the API on first read/write.
 
 Configure these environment variables in Vercel:
 
 ```text
-BLOB_READ_WRITE_TOKEN=...       # created by the Vercel Blob store
-OPTION_DATA_WRITE_TOKEN=...     # your shared write token for partners
+DATABASE_URL=...             # Neon/Postgres connection string
+OPTION_DATA_WRITE_TOKEN=...  # your shared write token for partners
 ```
 
-Small JSON payloads can be written through the dashboard API:
+Partners write option data through the dashboard API:
 
 ```bash
 curl -X POST "https://bull-stock.xyz/api/options/daily" \
@@ -61,24 +76,7 @@ Accepted payload shape:
 }
 ```
 
-For files near 10 MB, avoid sending the file body through the serverless API. Ask the API for short-lived direct-upload tokens, then upload the same JSON to both returned paths:
-
-```bash
-curl -X POST "https://bull-stock.xyz/api/options/upload-token" \
-  -H "Authorization: Bearer $OPTION_DATA_WRITE_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"date":"2026-05-03"}'
-```
-
-The response includes `uploads[]` entries for the dated blob and `options/latest.json`. Each entry contains a `clientToken`, `pathname`, `access`, and `contentType` for Vercel Blob direct upload.
-
-This repository also includes a direct-upload helper:
-
-```bash
-DASHBOARD_URL=https://bull-stock.xyz \
-OPTION_DATA_WRITE_TOKEN=... \
-node scripts/upload-options-to-blob.mjs examples/options-2026-05-03.json 2026-05-03
-```
+For large daily datasets, send multiple requests for the same `date` with different symbol subsets. Rows are upserted by `(symbol, trade_date)`, so repeated writes replace that symbol's data for that date. The normalized summary fields are stored in SQL columns, while the original per-symbol object is retained in `payload JSONB`.
 
 For the static fallback snapshot:
 
