@@ -20,7 +20,7 @@ type OptionHistory = {
   symbols: Record<string, OptionHistoryPoint[]>;
 };
 
-const OPTION_AXIS_DAYS = 60;
+const OPTION_AXIS_DAYS = 90;
 
 const NA: Scalar = "N/A";
 const EMPTY_OPTION = {
