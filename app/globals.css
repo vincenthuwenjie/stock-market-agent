@@ -362,6 +362,119 @@ th {
   padding: 10px;
 }
 
+.option-indicators {
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.option-chart-body {
+  display: grid;
+  grid-template-columns: minmax(0, 96px) minmax(0, 190px) minmax(0, 1fr);
+  min-height: 286px;
+  border-bottom: 1px solid var(--line);
+}
+
+.compact-tabs {
+  display: grid;
+  align-content: start;
+  border-right: 1px solid var(--line);
+  border-bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.compact-tabs .tab {
+  width: 100%;
+  text-align: left;
+}
+
+.metric-tabs {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 8px;
+  border-right: 1px solid var(--line);
+  background: var(--panel-2);
+  overflow-y: auto;
+}
+
+.metric-tab {
+  min-height: 28px;
+  border: 1px solid var(--line);
+  background: var(--chip);
+  color: var(--muted);
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.metric-tab.active {
+  color: var(--ink);
+  border-color: var(--blue);
+  background: rgba(77, 163, 255, 0.14);
+}
+
+.chart-wrap {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 10px;
+  background: var(--panel);
+}
+
+.line-chart {
+  width: 100%;
+  min-height: 220px;
+  display: block;
+}
+
+.line-chart line {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+.line-chart path {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2.2;
+}
+
+.line-chart circle {
+  fill: var(--blue);
+  stroke: var(--panel);
+  stroke-width: 1.5;
+}
+
+.line-chart text {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.chart-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chart-stats strong {
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.chart-stats span:last-child {
+  text-align: right;
+}
+
+.chart-empty {
+  min-height: 220px;
+}
+
 .influencer-analysis {
   border-top: 1px solid var(--line);
   background: #0b0f14;
@@ -503,7 +616,22 @@ th {
 
   .rec-grid,
   .subgrid,
+  .option-chart-body,
   .analysis-grid {
     grid-template-columns: 1fr;
+  }
+
+  .compact-tabs,
+  .metric-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .compact-tabs .tab,
+  .metric-tab {
+    width: auto;
+    text-align: center;
   }
 }

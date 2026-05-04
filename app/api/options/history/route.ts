@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   try {
     const result = await readOptionSqlHistory({
       symbols: splitParam(searchParams.get("symbols")),
-      metrics: splitParam(searchParams.get("metrics"), ["iv", "maxPain", "putCallOiRatio"]),
+      metrics: splitParam(searchParams.get("metrics"), ["all"]),
       days: daysParam(searchParams.get("days")),
     });
     return NextResponse.json(result, {

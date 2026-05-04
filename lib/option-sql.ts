@@ -40,6 +40,7 @@ export type OptionHistoryPoint = {
 export type OptionHistoryResult = {
   days: number;
   metrics: string[];
+  availableMetrics: string[];
   symbols: Record<string, OptionHistoryPoint[]>;
 };
 
@@ -194,6 +195,23 @@ const METRIC_COLUMNS: Record<string, keyof OptionDailyRow> = {
   expiration: "expiration",
 };
 
+const DEFAULT_NUMERIC_METRICS = [
+  "iv",
+  "ivRank",
+  "ivPercentile",
+  "historicalVolatility",
+  "putCallOiRatio",
+  "putCallVolumeRatio",
+  "todaysVolume",
+  "todaysOpenInterest",
+  "todayVsVolumeAvg30Day",
+  "todayVsOpenInterestAvg30Day",
+  "atr",
+  "maxPain",
+  "callOpenInterest",
+  "putOpenInterest",
+];
+
 function historyMetricValue(row: OptionDailyRow, metric: string): Scalar | string {
   const column = METRIC_COLUMNS[metric];
   if (column) {
@@ -246,25 +264,40 @@ export async function readLatestSqlOptionSnapshot(statuses?: SourceStatus[]) {
 export async function readOptionSqlHistory(params: OptionHistoryParams): Promise<OptionHistoryResult> {
   if (!hasDatabaseUrl()) throw new Error("DATABASE_URL is not configured");
   const symbols = [...new Set(params.symbols.map(normalizeSymbol).filter(Boolean))].slice(0, 500);
-  const metrics = [...new Set(params.metrics.map(normalizeMetric).filter(Boolean))].slice(0, 50);
+  let metrics = [...new Set(params.metrics.map(normalizeMetric).filter(Boolean))].slice(0, 50);
   const days = Math.min(Math.max(Math.round(params.days || 30), 1), 365);
 
   if (!symbols.length) throw new Error("symbols query parameter is required");
-  if (!metrics.length) throw new Error("metrics query parameter is required");
 
   await ensureOptionSchema();
   const sql = getSql();
+  const keyRows = await sql`
+    SELECT key, count(*)::int AS rows
+    FROM option_daily, lateral jsonb_each(payload) AS item(key, value)
+    WHERE symbol = ANY(${symbols}::text[])
+      AND trade_date >= ((SELECT max(trade_date) FROM option_daily WHERE symbol = ANY(${symbols}::text[])) - ${days - 1}::int)
+      AND jsonb_typeof(value) = 'number'
+    GROUP BY key
+    ORDER BY rows DESC, key
+  ` as Array<{ key: string; rows: number }>;
+  const availableMetrics = [...new Set([...DEFAULT_NUMERIC_METRICS, ...keyRows.map((row) => row.key)].map(normalizeMetric).filter(Boolean))].slice(0, 50);
+
+  if (!metrics.length || metrics.includes("all")) metrics = availableMetrics;
+  metrics = metrics.filter((metric) => availableMetrics.includes(metric)).slice(0, 50);
+  if (!metrics.length) throw new Error("metrics query parameter is required");
+
   const rows = await sql`
     SELECT symbol, trade_date::text AS trade_date, as_of, source, max_pain, iv, call_open_interest, put_open_interest, put_call_oi_ratio, expiration, payload
     FROM option_daily
     WHERE symbol = ANY(${symbols}::text[])
-      AND trade_date >= (CURRENT_DATE - ${days - 1}::int)
+      AND trade_date >= ((SELECT max(trade_date) FROM option_daily WHERE symbol = ANY(${symbols}::text[])) - ${days - 1}::int)
     ORDER BY symbol, trade_date
   ` as OptionDailyRow[];
 
   const result: OptionHistoryResult = {
     days,
     metrics,
+    availableMetrics,
     symbols: Object.fromEntries(symbols.map((symbol) => [symbol, []])),
   };
 

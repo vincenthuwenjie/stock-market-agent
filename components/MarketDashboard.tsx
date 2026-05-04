@@ -8,6 +8,17 @@ type Props = {
 };
 
 type Lang = "zh" | "en";
+type OptionHistoryPoint = {
+  date: string;
+  asOf: string | null;
+  values: Record<string, Scalar | string>;
+};
+type OptionHistory = {
+  days: number;
+  metrics: string[];
+  availableMetrics: string[];
+  symbols: Record<string, OptionHistoryPoint[]>;
+};
 
 const NA: Scalar = "N/A";
 const EMPTY_OPTION = {
@@ -66,6 +77,10 @@ const UI_ZH: Record<string, string> = {
   "Cross Asset": "跨资产",
   "Option Structure": "期权结构",
   "Market Breadth": "市场宽度",
+  "期权指标": "期权指标",
+  "Option Indicators": "期权指标",
+  "60D SQL History": "60 天 SQL 历史",
+  "No option history for this symbol/metric.": "该标的/指标暂无期权历史。",
   "Sample AMA": "样本 AMA",
   "Measure": "指标",
   "Value": "数值",
@@ -543,12 +558,87 @@ function stanceClass(stance: string) {
   return "";
 }
 
+function numericValue(value: Scalar | string | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function formatMetricName(value: string) {
+  return value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replaceAll("_", " ");
+}
+
+function OptionLineChart({ points, metric }: { points: OptionHistoryPoint[]; metric: string }) {
+  const numericPoints = points
+    .map((point) => ({ date: point.date, value: numericValue(point.values[metric]) }))
+    .filter((point): point is { date: string; value: number } => point.value !== null);
+
+  if (!numericPoints.length) return <div className="empty chart-empty">No option history for this symbol/metric.</div>;
+
+  const width = 720;
+  const height = 220;
+  const padX = 44;
+  const padY = 24;
+  const values = numericPoints.map((point) => point.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || Math.max(Math.abs(max), 1);
+  const xFor = (index: number) => padX + (numericPoints.length === 1 ? (width - padX * 2) / 2 : index * ((width - padX * 2) / (numericPoints.length - 1)));
+  const yFor = (value: number) => height - padY - ((value - min) / span) * (height - padY * 2);
+  const line = numericPoints.map((point, index) => `${index ? "L" : "M"} ${xFor(index).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
+  const first = numericPoints[0];
+  const last = numericPoints.at(-1) ?? first;
+
+  return (
+    <div className="chart-wrap">
+      <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${metric} 60 day option history`}>
+        <line x1={padX} x2={width - padX} y1={height - padY} y2={height - padY} />
+        <line x1={padX} x2={padX} y1={padY} y2={height - padY} />
+        <text x={padX - 8} y={padY + 4} textAnchor="end">{fmt(max)}</text>
+        <text x={padX - 8} y={height - padY} textAnchor="end">{fmt(min)}</text>
+        <text x={padX} y={height - 5}>{first.date.slice(5)}</text>
+        <text x={width - padX} y={height - 5} textAnchor="end">{last.date.slice(5)}</text>
+        {numericPoints.length > 1 ? <path d={line} /> : null}
+        {numericPoints.map((point, index) => (
+          <circle key={`${point.date}-${point.value}`} cx={xFor(index)} cy={yFor(point.value)} r={3}>
+            <title>{point.date}: {fmt(point.value)}</title>
+          </circle>
+        ))}
+      </svg>
+      <div className="chart-stats">
+        <span>{first.date}: {fmt(first.value)}</span>
+        <strong>{formatMetricName(metric)}</strong>
+        <span>{last.date}: {fmt(last.value)}</span>
+      </div>
+    </div>
+  );
+}
+
 export function MarketDashboard({ initialData }: Props) {
   const [data, setData] = useState(initialData);
   const [activeTicker, setActiveTicker] = useState(initialData.meta?.watchlist?.[0] ?? "AAPL");
+  const [activeOptionTicker, setActiveOptionTicker] = useState("QQQ");
+  const [activeOptionMetric, setActiveOptionMetric] = useState("iv");
+  const [optionHistory, setOptionHistory] = useState<OptionHistory | null>(null);
+  const [isOptionHistoryLoading, setIsOptionHistoryLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lang, setLang] = useState<Lang>("zh");
   const didInitialRefresh = useRef(false);
+  const stockRows = useMemo(() => Object.entries(data.stockIndicators ?? {}), [data.stockIndicators]);
+  const watchlist = data.meta?.watchlist ?? [];
+  const optionSymbols = useMemo(() => [...new Set(["QQQ", "SPY", ...watchlist])], [watchlist]);
+
+  async function refreshOptionHistory() {
+    if (!optionSymbols.length) return;
+    setIsOptionHistoryLoading(true);
+    try {
+      const response = await fetch(`/api/options/history?symbols=${encodeURIComponent(optionSymbols.join(","))}&days=60&metrics=all`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`option history ${response.status}`);
+      const next = await response.json() as OptionHistory;
+      setOptionHistory(next);
+      if (!next.availableMetrics.includes(activeOptionMetric)) setActiveOptionMetric(next.availableMetrics[0] ?? "iv");
+    } finally {
+      setIsOptionHistoryLoading(false);
+    }
+  }
 
   async function refresh() {
     setIsRefreshing(true);
@@ -556,6 +646,7 @@ export function MarketDashboard({ initialData }: Props) {
       const response = await fetch("/api/snapshot", { cache: "no-store" });
       if (!response.ok) throw new Error(`snapshot ${response.status}`);
       setData(await response.json() as MarketSnapshot);
+      void refreshOptionHistory();
     } finally {
       setIsRefreshing(false);
     }
@@ -565,7 +656,12 @@ export function MarketDashboard({ initialData }: Props) {
     if (didInitialRefresh.current) return;
     didInitialRefresh.current = true;
     void refresh();
+    void refreshOptionHistory();
   }, []);
+
+  useEffect(() => {
+    void refreshOptionHistory();
+  }, [optionSymbols.join(",")]);
 
   useEffect(() => {
     const refreshSeconds = data.meta?.refreshSeconds ?? 300;
@@ -573,9 +669,9 @@ export function MarketDashboard({ initialData }: Props) {
     return () => window.clearInterval(interval);
   }, [data.meta?.refreshSeconds]);
 
-  const stockRows = useMemo(() => Object.entries(data.stockIndicators ?? {}), [data.stockIndicators]);
-  const watchlist = data.meta?.watchlist ?? [];
   const activeNews = data.stockNews?.[activeTicker] ?? [];
+  const activeOptionPoints = optionHistory?.symbols?.[activeOptionTicker] ?? [];
+  const optionMetrics = optionHistory?.availableMetrics?.length ? optionHistory.availableMetrics : ["iv", "ivRank", "ivPercentile", "putCallOiRatio"];
   const indices = data.macroIndicators?.indices ?? {};
   const volatility = data.macroIndicators?.volatility ?? {};
   const fx = data.macroIndicators?.fx ?? {};
@@ -759,6 +855,30 @@ export function MarketDashboard({ initialData }: Props) {
             </table>
           </div>
         </article>
+      </section>
+
+      <section className="option-indicators">
+        <header className="panel-head">
+          <div className="panel-title"><span className="dot" /><strong>{localize("期权指标", lang)}</strong></div>
+          <div className="panel-actions">{localize("60D SQL History", lang)}{isOptionHistoryLoading ? ` · ${localize("Refreshing", lang)}` : ""}</div>
+        </header>
+        <div className="option-chart-body">
+          <div className="tabs compact-tabs">
+            {optionSymbols.map((ticker) => (
+              <button className={`tab ${ticker === activeOptionTicker ? "active" : ""}`} key={ticker} onClick={() => setActiveOptionTicker(ticker)} type="button">
+                {ticker}
+              </button>
+            ))}
+          </div>
+          <div className="metric-tabs" aria-label="Option metrics">
+            {optionMetrics.map((metric) => (
+              <button className={`metric-tab ${metric === activeOptionMetric ? "active" : ""}`} key={metric} onClick={() => setActiveOptionMetric(metric)} type="button" title={metric}>
+                {formatMetricName(metric)}
+              </button>
+            ))}
+          </div>
+          <OptionLineChart points={activeOptionPoints} metric={activeOptionMetric} />
+        </div>
       </section>
 
       <section className="recommendation">
