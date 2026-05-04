@@ -102,6 +102,9 @@ const UI_ZH: Record<string, string> = {
   "Focus": "关注",
   "No major drivers.": "暂无主要驱动因素。",
   "No focus list.": "暂无关注清单。",
+  "Full Reports": "比较完整的报告",
+  "Open report": "打开报告",
+  "No complete reports available in this runtime.": "当前运行环境暂无完整报告索引。",
   "Influencer AI Mock Analysis": "影响者 AI 模拟分析",
   "All Influencers": "全部博主",
   "English Influencer": "英文博主",
@@ -747,6 +750,12 @@ export function MarketDashboard({ initialData }: Props) {
     summary: "Influencer mock analysis unavailable in this snapshot.",
     items: [],
   };
+  const completeReports = data.completeReports ?? {
+    asOf: "",
+    source: "https://boist.org/feed/",
+    summary: "Complete report index unavailable in this snapshot.",
+    items: [],
+  };
   const influencerLocaleCounts = influencerMockAnalysis.items.reduce<Record<InfluencerLocaleFilter, number>>((counts, item) => {
     counts[influencerLocale(item)] += 1;
     counts.all += 1;
@@ -978,6 +987,38 @@ export function MarketDashboard({ initialData }: Props) {
             </section>
           </div>
         </div>
+      </section>
+
+      <section className="complete-reports">
+        <header className="panel-head">
+          <div className="panel-title"><span className="dot" /><strong>{localize("Full Reports", lang)}</strong></div>
+          <div className="panel-actions">{completeReports.items.length} reports</div>
+        </header>
+        <div className="analysis-summary">
+          {lang === "en" ? <p className="rec-text">{completeReports.summary}</p> : null}
+          <span className="stamp" title={completeReports.source}>bbozeng · boist.org</span>
+        </div>
+        {completeReports.items.length ? (
+          <div className="report-grid">
+            {completeReports.items.map((report) => (
+              <article className="report-card" key={report.url}>
+                <div className="report-top">
+                  <strong><TranslatedText value={report.title} lang={lang} /></strong>
+                  <span>{shortTime(report.publishedAt)} · {report.author}</span>
+                </div>
+                {report.summary ? <p><TranslatedText value={report.summary} lang={lang} /></p> : null}
+                {report.tags.length ? (
+                  <div className="report-tags">
+                    {report.tags.map((tag) => <span key={`${report.url}-${tag}`}>{tag}</span>)}
+                  </div>
+                ) : null}
+                <a href={report.url} rel="noreferrer" target="_blank">{localize("Open report", lang)}</a>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="empty">{localize("No complete reports available in this runtime.", lang)}</div>
+        )}
       </section>
 
       <section className="influencer-analysis">

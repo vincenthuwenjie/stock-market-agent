@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import config from "@/config.json";
 import { readLatestSqlOptionSnapshot } from "@/lib/option-sql";
-import type { InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator } from "@/lib/types";
+import type { CompleteReportItem, InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator } from "@/lib/types";
 
 const MISSING: Scalar = "N/A";
 const WATCHLIST = config.watchlist;
@@ -149,9 +149,30 @@ async function fetchJson<T = Record<string, unknown>>(url: string, timeoutMs = 9
   }
 }
 
+function decodeXmlText(value: string) {
+  return value
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#039;/g, "'")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8230;/g, "...")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function firstTag(xml: string, tag: string) {
   const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"));
-  return match ? stripTags(match[1] ?? "") : "";
+  return match ? stripTags(decodeXmlText(match[1] ?? "")) : "";
+}
+
+function allTags(xml: string, tag: string) {
+  return [...xml.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "gi"))]
+    .map((match) => stripTags(decodeXmlText(match[1] ?? "")))
+    .filter(Boolean);
 }
 
 async function fetchRss(url: string, source: string, limit = 8): Promise<NewsItem[]> {
@@ -171,6 +192,36 @@ async function fetchRss(url: string, source: string, limit = 8): Promise<NewsIte
       channel: "rss",
     };
   }).filter((item) => item.title);
+}
+
+async function fetchBoistReports(limit = 12): Promise<CompleteReportItem[]> {
+  const sourceUrl = "https://boist.org/feed/";
+  const xml = await fetchText(sourceUrl, 12000);
+  if (!xml) return [];
+  return [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)]
+    .map((match) => match[0])
+    .slice(0, limit)
+    .map((block) => ({
+      title: firstTag(block, "title"),
+      summary: clipText(firstTag(block, "description"), 220),
+      source: "boist.org",
+      author: firstTag(block, "dc:creator") || "Bo Zeng",
+      publishedAt: normalizeDate(firstTag(block, "pubDate")),
+      url: firstTag(block, "link"),
+      tags: allTags(block, "category").slice(0, 8),
+    }))
+    .filter((item) => item.title && item.url);
+}
+
+async function collectCompleteReports(statuses: SourceStatus[]) {
+  const items = await fetchBoistReports(12);
+  statuses.push(status("reports:boist.org", items.length ? "ok" : "missing", items.length ? `${items.length} public RSS report items` : "RSS unavailable or empty"));
+  return {
+    asOf: items[0]?.publishedAt ?? "",
+    source: "https://boist.org/feed/",
+    summary: "Bo Zeng report index from public RSS. Subscription-only full text is not mirrored; open source link for the complete report.",
+    items,
+  };
 }
 
 function normalizeDate(value: string) {
@@ -927,10 +978,11 @@ export async function getMarketSnapshot(): Promise<MarketSnapshot> {
   const statuses: SourceStatus[] = [];
   const symbols = [...new Set([...WATCHLIST, ...ETF_SYMBOLS, ...config.indexConstituentSamples.SPY, ...config.indexConstituentSamples.QQQ])];
 
-  const [macroNews, stockNews, influencerMockAnalysis, marketData, sqlOptions, vix, vxn, bonds, fx, liquidity] = await Promise.all([
+  const [macroNews, stockNews, influencerMockAnalysis, completeReports, marketData, sqlOptions, vix, vxn, bonds, fx, liquidity] = await Promise.all([
     collectMacroNews(statuses),
     collectStockNews(statuses),
     collectInfluencerMockAnalysis(statuses),
+    collectCompleteReports(statuses),
     collectNasdaqData(symbols, [...WATCHLIST, ...ETF_SYMBOLS], statuses),
     readLatestSqlOptionSnapshot(statuses),
     fetchCboeIndex("VIX", statuses),
@@ -992,6 +1044,7 @@ export async function getMarketSnapshot(): Promise<MarketSnapshot> {
     macroNews,
     stockNews,
     influencerMockAnalysis,
+    completeReports,
     macroIndicators,
     stockIndicators,
     recommendation: buildRecommendation(partial),

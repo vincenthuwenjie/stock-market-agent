@@ -79,6 +79,16 @@ export type InfluencerMockAnalysisItem = {
   }>;
 };
 
+export type CompleteReportItem = {
+  title: string;
+  summary: string;
+  source: string;
+  author: string;
+  publishedAt: string;
+  url: string;
+  tags: string[];
+};
+
 export type MarketSnapshot = {
   generatedAt: string;
   meta: {
@@ -95,6 +105,12 @@ export type MarketSnapshot = {
     source: string;
     summary: string;
     items: InfluencerMockAnalysisItem[];
+  };
+  completeReports: {
+    asOf: string;
+    source: string;
+    summary: string;
+    items: CompleteReportItem[];
   };
   macroIndicators: {
     indices: Record<"QQQ" | "SPY", IndexIndicator>;

@@ -492,6 +492,67 @@ th {
   background: #0b0f14;
 }
 
+.complete-reports {
+  border-top: 1px solid var(--line);
+  background: #0b0f14;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.report-card {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 10px;
+  background: var(--panel);
+}
+
+.report-top {
+  display: grid;
+  gap: 4px;
+}
+
+.report-top strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.report-top span,
+.report-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.report-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.report-tags span {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.report-card a {
+  width: max-content;
+  color: var(--amber);
+  font-size: 12px;
+  text-decoration: none;
+}
+
 .analysis-summary {
   display: flex;
   align-items: center;
@@ -717,6 +778,7 @@ th {
   .rec-grid,
   .subgrid,
   .option-chart-body,
+  .report-grid,
   .analysis-grid {
     grid-template-columns: 1fr;
   }

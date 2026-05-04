@@ -194,8 +194,17 @@ function bundledInfluencerMockAnalysis() {
   }
 }
 
+function emptyCompleteReports() {
+  return {
+    asOf: "",
+    source: "https://boist.org/feed/",
+    summary: "Bo Zeng report index loads during live refresh.",
+    items: [],
+  };
+}
+
 export function getFallbackMarketSnapshot(): MarketSnapshot {
-  const snapshot = latestSnapshot as unknown as Omit<MarketSnapshot, "influencerMockAnalysis">;
+  const snapshot = latestSnapshot as unknown as Omit<MarketSnapshot, "influencerMockAnalysis" | "completeReports">;
   return {
     ...snapshot,
     generatedAt: snapshot.generatedAt || new Date().toISOString(),
@@ -208,6 +217,7 @@ export function getFallbackMarketSnapshot(): MarketSnapshot {
       ...(snapshot.sourcesStatus ?? []),
     ],
     influencerMockAnalysis: bundledInfluencerMockAnalysis(),
+    completeReports: emptyCompleteReports(),
     macroIndicators: {
       ...snapshot.macroIndicators,
       liquidity: snapshot.macroIndicators.liquidity ?? {
