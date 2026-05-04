@@ -272,10 +272,15 @@ export async function readOptionSqlHistory(params: OptionHistoryParams): Promise
   await ensureOptionSchema();
   const sql = getSql();
   const keyRows = await sql`
+    WITH selected_rows AS (
+      SELECT payload,
+             row_number() OVER (PARTITION BY symbol ORDER BY trade_date DESC) AS row_num
+      FROM option_daily
+      WHERE symbol = ANY(${symbols}::text[])
+    )
     SELECT key, count(*)::int AS rows
-    FROM option_daily, lateral jsonb_each(payload) AS item(key, value)
-    WHERE symbol = ANY(${symbols}::text[])
-      AND trade_date >= ((SELECT max(trade_date) FROM option_daily WHERE symbol = ANY(${symbols}::text[])) - ${days - 1}::int)
+    FROM selected_rows, lateral jsonb_each(payload) AS item(key, value)
+    WHERE row_num <= ${days}
       AND jsonb_typeof(value) = 'number'
     GROUP BY key
     ORDER BY rows DESC, key
@@ -287,10 +292,25 @@ export async function readOptionSqlHistory(params: OptionHistoryParams): Promise
   if (!metrics.length) throw new Error("metrics query parameter is required");
 
   const rows = await sql`
+    WITH selected_rows AS (
+      SELECT symbol,
+             trade_date,
+             as_of,
+             source,
+             max_pain,
+             iv,
+             call_open_interest,
+             put_open_interest,
+             put_call_oi_ratio,
+             expiration,
+             payload,
+             row_number() OVER (PARTITION BY symbol ORDER BY trade_date DESC) AS row_num
+      FROM option_daily
+      WHERE symbol = ANY(${symbols}::text[])
+    )
     SELECT symbol, trade_date::text AS trade_date, as_of, source, max_pain, iv, call_open_interest, put_open_interest, put_call_oi_ratio, expiration, payload
-    FROM option_daily
-    WHERE symbol = ANY(${symbols}::text[])
-      AND trade_date >= ((SELECT max(trade_date) FROM option_daily WHERE symbol = ANY(${symbols}::text[])) - ${days - 1}::int)
+    FROM selected_rows
+    WHERE row_num <= ${days}
     ORDER BY symbol, trade_date
   ` as OptionDailyRow[];
 
