@@ -20,6 +20,8 @@ type OptionHistory = {
   symbols: Record<string, OptionHistoryPoint[]>;
 };
 
+const OPTION_AXIS_DAYS = 60;
+
 const NA: Scalar = "N/A";
 const EMPTY_OPTION = {
   source: "unavailable",
@@ -573,6 +575,14 @@ function formatMetricName(value: string) {
   return value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replaceAll("_", " ");
 }
 
+function utcDay(value: string) {
+  return Date.parse(`${value.slice(0, 10)}T00:00:00.000Z`);
+}
+
+function dateKeyFromUtc(ms: number) {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
 function OptionLineChart({ points, metric, days }: { points: OptionHistoryPoint[]; metric: string; days: number }) {
   const numericPoints = points
     .map((point) => ({ date: point.date, value: numericValue(point.values[metric]) }))
@@ -584,32 +594,45 @@ function OptionLineChart({ points, metric, days }: { points: OptionHistoryPoint[
   const height = 220;
   const padX = 44;
   const padY = 24;
-  const values = numericPoints.map((point) => point.value);
+  const axisDays = Math.max(days, 1);
+  const dayMs = 24 * 60 * 60 * 1000;
+  const endMs = Math.max(...numericPoints.map((point) => utcDay(point.date)));
+  const startMs = endMs - (axisDays - 1) * dayMs;
+  const visiblePoints = numericPoints.filter((point) => {
+    const pointMs = utcDay(point.date);
+    return pointMs >= startMs && pointMs <= endMs;
+  });
+  const values = visiblePoints.map((point) => point.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || Math.max(Math.abs(max), 1);
-  const xForIndex = (index: number) => {
-    const denominator = Math.max(numericPoints.length - 1, 1);
-    return padX + (index / denominator) * (width - padX * 2);
+  const xForDate = (date: string) => {
+    const offset = Math.max(0, Math.min(axisDays - 1, Math.round((utcDay(date) - startMs) / dayMs)));
+    const denominator = Math.max(axisDays - 1, 1);
+    return padX + (offset / denominator) * (width - padX * 2);
   };
   const yFor = (value: number) => height - padY - ((value - min) / span) * (height - padY * 2);
-  const line = numericPoints.length === 1
+  const line = visiblePoints.length === 1
     ? (() => {
-      const point = numericPoints[0];
-      const x = xForIndex(0);
+      const point = visiblePoints[0];
+      const x = xForDate(point.date);
       const y = yFor(point.value);
       const left = Math.max(padX, Math.min(width - padX - 16, x - 8));
       return `M ${left.toFixed(2)} ${y.toFixed(2)} L ${(left + 16).toFixed(2)} ${y.toFixed(2)}`;
     })()
-    : numericPoints.map((point, index) => `${index ? "L" : "M"} ${xForIndex(index).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
-  const first = numericPoints[0];
-  const last = numericPoints.at(-1) ?? first;
-  const tickIndexes = [...new Set([0, Math.round((numericPoints.length - 1) * 0.25), Math.round((numericPoints.length - 1) * 0.5), Math.round((numericPoints.length - 1) * 0.75), numericPoints.length - 1])];
-  const ticks = tickIndexes.map((index) => ({ date: numericPoints[index].date, x: xForIndex(index) }));
+    : visiblePoints.map((point, index) => `${index ? "L" : "M"} ${xForDate(point.date).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
+  const first = visiblePoints[0];
+  const last = visiblePoints.at(-1) ?? first;
+  const tickOffsets = [...new Set([0, Math.round((axisDays - 1) * 0.25), Math.round((axisDays - 1) * 0.5), Math.round((axisDays - 1) * 0.75), axisDays - 1])];
+  const ticks = tickOffsets.map((offset) => {
+    const date = dateKeyFromUtc(startMs + offset * dayMs);
+    const x = padX + (offset / Math.max(axisDays - 1, 1)) * (width - padX * 2);
+    return { date, x };
+  });
 
   return (
     <div className="chart-wrap">
-      <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${metric} latest ${days} option records`}>
+      <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${metric} latest ${days} calendar days option history`}>
         <line x1={padX} x2={width - padX} y1={height - padY} y2={height - padY} />
         <line x1={padX} x2={padX} y1={padY} y2={height - padY} />
         {ticks.map((tick) => (
@@ -621,8 +644,8 @@ function OptionLineChart({ points, metric, days }: { points: OptionHistoryPoint[
         <text x={padX - 8} y={padY + 4} textAnchor="end">{fmt(max)}</text>
         <text x={padX - 8} y={height - padY} textAnchor="end">{fmt(min)}</text>
         <path d={line} />
-        {numericPoints.map((point, index) => (
-          <circle key={`${point.date}-${point.value}-${index}`} cx={xForIndex(index)} cy={yFor(point.value)} r={4.5}>
+        {visiblePoints.map((point, index) => (
+          <circle key={`${point.date}-${point.value}-${index}`} cx={xForDate(point.date)} cy={yFor(point.value)} r={4.5}>
             <title>{point.date}: {fmt(point.value)}</title>
           </circle>
         ))}
@@ -654,7 +677,7 @@ export function MarketDashboard({ initialData }: Props) {
     if (!optionSymbols.length) return;
     setIsOptionHistoryLoading(true);
     try {
-      const response = await fetch(`/api/options/history?symbols=${encodeURIComponent(optionSymbols.join(","))}&days=30&metrics=all`, { cache: "no-store" });
+      const response = await fetch(`/api/options/history?symbols=${encodeURIComponent(optionSymbols.join(","))}&days=${OPTION_AXIS_DAYS}&metrics=all`, { cache: "no-store" });
       if (!response.ok) throw new Error(`option history ${response.status}`);
       const next = await response.json() as OptionHistory;
       setOptionHistory(next);
@@ -887,7 +910,7 @@ export function MarketDashboard({ initialData }: Props) {
       <section className="option-indicators">
         <header className="panel-head">
           <div className="panel-title"><span className="dot" /><strong>{localize("期权指标", lang)}</strong></div>
-          <div className="panel-actions">{lang === "zh" ? `最近 ${optionHistory?.days ?? 30} 条 SQL 数据` : `Latest ${optionHistory?.days ?? 30} SQL records`}{isOptionHistoryLoading ? ` · ${localize("Refreshing", lang)}` : ""}</div>
+          <div className="panel-actions">{lang === "zh" ? `最近 ${OPTION_AXIS_DAYS} 天 SQL 数据` : `Latest ${OPTION_AXIS_DAYS} calendar days`}{isOptionHistoryLoading ? ` · ${localize("Refreshing", lang)}` : ""}</div>
         </header>
         <div className="option-chart-body">
           <div className="tabs compact-tabs">
@@ -904,7 +927,7 @@ export function MarketDashboard({ initialData }: Props) {
               </button>
             ))}
           </div>
-          <OptionLineChart points={activeOptionPoints} metric={activeOptionMetric} days={optionHistory?.days ?? 30} />
+          <OptionLineChart points={activeOptionPoints} metric={activeOptionMetric} days={OPTION_AXIS_DAYS} />
         </div>
       </section>
 
