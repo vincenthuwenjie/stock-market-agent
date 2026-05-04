@@ -598,7 +598,15 @@ function OptionLineChart({ points, metric }: { points: OptionHistoryPoint[]; met
     return padX + (offset / 59) * (width - padX * 2);
   };
   const yFor = (value: number) => height - padY - ((value - min) / span) * (height - padY * 2);
-  const line = numericPoints.map((point, index) => `${index ? "L" : "M"} ${xForDate(point.date).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
+  const line = numericPoints.length === 1
+    ? (() => {
+      const point = numericPoints[0];
+      const x = xForDate(point.date);
+      const y = yFor(point.value);
+      const left = Math.max(padX, Math.min(width - padX - 16, x - 8));
+      return `M ${left.toFixed(2)} ${y.toFixed(2)} L ${(left + 16).toFixed(2)} ${y.toFixed(2)}`;
+    })()
+    : numericPoints.map((point, index) => `${index ? "L" : "M"} ${xForDate(point.date).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
   const first = numericPoints[0];
   const last = numericPoints.at(-1) ?? first;
   const ticks = [0, 14, 29, 44, 59].map((offset) => {
@@ -620,9 +628,9 @@ function OptionLineChart({ points, metric }: { points: OptionHistoryPoint[]; met
         ))}
         <text x={padX - 8} y={padY + 4} textAnchor="end">{fmt(max)}</text>
         <text x={padX - 8} y={height - padY} textAnchor="end">{fmt(min)}</text>
-        {numericPoints.length > 1 ? <path d={line} /> : null}
+        <path d={line} />
         {numericPoints.map((point) => (
-          <circle key={`${point.date}-${point.value}`} cx={xForDate(point.date)} cy={yFor(point.value)} r={3}>
+          <circle key={`${point.date}-${point.value}`} cx={xForDate(point.date)} cy={yFor(point.value)} r={4.5}>
             <title>{point.date}: {fmt(point.value)}</title>
           </circle>
         ))}
