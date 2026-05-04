@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MarketSnapshot, NewsItem, Scalar } from "@/lib/types";
+import type { InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, Scalar } from "@/lib/types";
 
 type Props = {
   initialData: MarketSnapshot;
@@ -102,8 +102,8 @@ const UI_ZH: Record<string, string> = {
   "No major drivers.": "暂无主要驱动因素。",
   "No focus list.": "暂无关注清单。",
   "Influencer AI Mock Analysis": "影响者 AI 模拟分析",
-  "English Influencers": "英文博主",
-  "Chinese Influencers": "中文博主",
+  "English Influencer": "英文博主",
+  "Chinese Influencer": "中文博主",
   "mock read": "模拟解读",
   "Quote": "引用上下文",
   "No influencer analysis available in this runtime.": "当前运行环境暂无影响者分析。",
@@ -570,6 +570,12 @@ function stanceClass(stance: string) {
   return "";
 }
 
+function influencerLocale(item: InfluencerMockAnalysisItem) {
+  if (item.locale) return item.locale;
+  const rawText = `${item.name} ${item.profileBio ?? ""} ${(item.tweets ?? []).map((tweet) => `${tweet.text} ${tweet.quote?.author ?? ""} ${tweet.quote?.text ?? ""}`).join(" ")}`;
+  return /[\u3400-\u9fff]/.test(rawText) ? "chinese" : "english";
+}
+
 function numericValue(value: Scalar | string | undefined) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
@@ -738,26 +744,6 @@ export function MarketDashboard({ initialData }: Props) {
     summary: "Influencer mock analysis unavailable in this snapshot.",
     items: [],
   };
-  const influencerGroups = [
-    {
-      key: "english",
-      title: "English Influencers",
-      items: influencerMockAnalysis.items.filter((item) => {
-        if (item.locale) return item.locale === "english";
-        const rawText = `${item.name} ${item.profileBio ?? ""} ${(item.tweets ?? []).map((tweet) => `${tweet.text} ${tweet.quote?.author ?? ""} ${tweet.quote?.text ?? ""}`).join(" ")}`;
-        return !/[\u3400-\u9fff]/.test(rawText);
-      }),
-    },
-    {
-      key: "chinese",
-      title: "Chinese Influencers",
-      items: influencerMockAnalysis.items.filter((item) => {
-        if (item.locale) return item.locale === "chinese";
-        const rawText = `${item.name} ${item.profileBio ?? ""} ${(item.tweets ?? []).map((tweet) => `${tweet.text} ${tweet.quote?.author ?? ""} ${tweet.quote?.text ?? ""}`).join(" ")}`;
-        return /[\u3400-\u9fff]/.test(rawText);
-      }),
-    },
-  ].filter((group) => group.items.length);
 
   return (
     <main className="shell">
@@ -988,45 +974,41 @@ export function MarketDashboard({ initialData }: Props) {
           <span className="stamp" title={influencerMockAnalysis.source}>{localizeSource(influencerMockAnalysis.source, lang)}</span>
         </div>
         {influencerMockAnalysis.items.length ? (
-          <div className="analysis-groups">
-            {influencerGroups.map((group) => (
-              <section className="analysis-group" key={group.key}>
-                <div className="analysis-group-title">
-                  <strong>{localize(group.title, lang)}</strong>
-                  <span>{group.items.length}</span>
-                </div>
-                <div className="analysis-grid">
-                  {group.items.map((item) => (
-                    <article className="analysis-card" key={`${item.handle}-${item.theme}`}>
-                      <div className="analysis-top">
-                        <div>
-                          <strong>{item.name}</strong>
-                          <span>{item.handle} · {localize(item.domain, lang)}</span>
-                        </div>
-                        <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
-                      </div>
-                      {item.profileBio ? <p className="analysis-bio"><TranslatedText value={item.profileBio} lang={lang} /></p> : null}
-                      <div className="section-title"><span>{localize(item.theme, lang)}</span><span>{localize("mock read", lang)}</span></div>
-                      <p className="analysis-thesis"><TranslatedText value={item.thesis} lang={lang} /></p>
-                      <ul className="tweet-list">
-                        {(item.tweets?.length ? item.tweets : item.evidence.map((line) => ({ text: line, time: "", quote: undefined }))).map((tweet) => (
-                          <li key={`${tweet.time}-${tweet.text}`}>
-                            {tweet.time ? <span className="tweet-time">{tweet.time}</span> : null}
-                            <p><TranslatedText value={tweet.text} lang={lang} /></p>
-                            {tweet.quote ? (
-                              <blockquote>
-                                <strong>{localize("Quote", lang)} · {tweet.quote.author}</strong>
-                                <span><TranslatedText value={tweet.quote.text} lang={lang} /></span>
-                              </blockquote>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ))}
+          <div className="analysis-grid">
+            {influencerMockAnalysis.items.map((item) => {
+              const localeLabel = influencerLocale(item) === "chinese" ? "Chinese Influencer" : "English Influencer";
+              return (
+                <article className="analysis-card" key={`${item.handle}-${item.theme}`}>
+                  <div className="analysis-top">
+                    <div>
+                      <strong>{item.name}</strong>
+                      <span>{item.handle} · {localize(item.domain, lang)}</span>
+                    </div>
+                    <div className="analysis-badges">
+                      <span className="analysis-locale">{localize(localeLabel, lang)}</span>
+                      <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
+                    </div>
+                  </div>
+                  {item.profileBio ? <p className="analysis-bio"><TranslatedText value={item.profileBio} lang={lang} /></p> : null}
+                  <div className="section-title"><span>{localize(item.theme, lang)}</span><span>{localize("mock read", lang)}</span></div>
+                  <p className="analysis-thesis"><TranslatedText value={item.thesis} lang={lang} /></p>
+                  <ul className="tweet-list">
+                    {(item.tweets?.length ? item.tweets : item.evidence.map((line) => ({ text: line, time: "", quote: undefined }))).map((tweet) => (
+                      <li key={`${tweet.time}-${tweet.text}`}>
+                        {tweet.time ? <span className="tweet-time">{tweet.time}</span> : null}
+                        <p><TranslatedText value={tweet.text} lang={lang} /></p>
+                        {tweet.quote ? (
+                          <blockquote>
+                            <strong>{localize("Quote", lang)} · {tweet.quote.author}</strong>
+                            <span><TranslatedText value={tweet.quote.text} lang={lang} /></span>
+                          </blockquote>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="empty">{localize("No influencer analysis available in this runtime.", lang)}</div>

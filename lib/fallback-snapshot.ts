@@ -29,10 +29,10 @@ function influencerLocaleFromContent(...values: string[]): InfluencerMockAnalysi
 }
 
 function selectInfluencerItems(scored: Array<{ score: number; item: InfluencerMockAnalysisItem }>) {
-  const sorted = scored.sort((a, b) => b.score - a.score);
-  const english = sorted.filter(({ item }) => item.locale === "english").slice(0, 12);
-  const chinese = sorted.filter(({ item }) => item.locale === "chinese").slice(0, 12);
-  return [...english, ...chinese].map(({ item }) => item);
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 50)
+    .map(({ item }) => item);
 }
 
 function parseBundledInfluencerMarkdown(markdown: string, source = "data/influencer-and-press-collection-agent/latest.md") {
