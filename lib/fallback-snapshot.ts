@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import latestSnapshot from "@/latest.json";
@@ -15,9 +15,10 @@ function clipText(value: string, length = 180) {
   return text.length > length ? `${text.slice(0, length - 1)}...` : text;
 }
 
-function parseBundledInfluencerMarkdown(markdown: string) {
-  const asOf = markdown.match(/^# Daily Collection\s+[—-]\s+(.+)$/m)?.[1]?.trim() ?? "";
-  const headingPattern = /^###\s+(.+?)\s+\(@([^)]+)\)\s+[—-]\s+(.+)$/gm;
+function parseBundledInfluencerMarkdown(markdown: string, source = "data/influencer-and-press-collection-agent/latest.md") {
+  const asOf = markdown.match(/^# Daily(?: AI Tech Updates| Collection)\s+[—-]\s+(.+)$/m)?.[1]?.trim() ?? "";
+  const defaultDomain = markdown.startsWith("# Daily AI Tech Updates") ? "AI / Tech" : "";
+  const headingPattern = /^###\s+(.+?)\s+\(@([^)]+)\)(?:[ \t]+[—-][ \t]+(.+))?$/gm;
   const headings = [...markdown.matchAll(headingPattern)];
   const priority = new Set(["Corsica267", "KobeissiLetter", "NickTimiraos", "DeItaone", "zerohedge", "unusual_whales", "Balloon_Capital", "TJ_Research"]);
 
@@ -52,7 +53,7 @@ function parseBundledInfluencerMarkdown(markdown: string) {
         item: {
           name: match[1]?.trim() ?? "",
           handle: `@${match[2]?.trim() ?? ""}`,
-          domain: match[3]?.trim() ?? "",
+          domain: match[3]?.trim() || defaultDomain,
           theme,
           stance,
           thesis: evidence[0] ? `${match[1]?.trim()}: ${clipText(evidence[0], 150)}` : "No recent market-relevant post extracted",
@@ -68,16 +69,43 @@ function parseBundledInfluencerMarkdown(markdown: string) {
 
   return {
     asOf,
-    source: "data/influencer-and-press-collection-agent/latest.md",
+    source,
     summary: items.length ? "Bundled influencer mock analysis loaded instantly; live refresh runs in the background." : "No bundled influencer analysis available.",
     items,
   };
 }
 
+function sourceRank(source: string, markdown: string) {
+  return markdown.match(/^# Daily(?: AI Tech Updates| Collection)\s+[—-]\s+(\d{4}-\d{2}-\d{2})$/m)?.[1]
+    ?? source.match(/(\d{4}-\d{2}-\d{2})\.md$/)?.[1]
+    ?? "";
+}
+
 function bundledInfluencerMockAnalysis() {
   try {
-    const markdown = readFileSync(join(process.cwd(), "data/influencer-and-press-collection-agent/latest.md"), "utf8");
-    return parseBundledInfluencerMarkdown(markdown);
+    const root = join(process.cwd(), "data/influencer-and-press-collection-agent");
+    const candidates = [join(root, "latest.md")];
+    try {
+      candidates.push(...readdirSync(join(root, "daily-ai-tech"))
+        .filter((file) => /^\d{4}-\d{2}-\d{2}\.md$/.test(file))
+        .map((file) => join(root, "daily-ai-tech", file)));
+    } catch {
+      // The AI tech directory is optional in bundled snapshots.
+    }
+    const freshest = candidates
+      .map((source) => {
+        try {
+          const markdown = readFileSync(source, "utf8");
+          return { source, markdown, rank: sourceRank(source, markdown) };
+        } catch {
+          return null;
+        }
+      })
+      .filter((item): item is { source: string; markdown: string; rank: string } => Boolean(item))
+      .sort((a, b) => b.rank.localeCompare(a.rank))[0];
+    if (!freshest) throw new Error("No bundled influencer markdown source");
+    const markdown = freshest.markdown;
+    return parseBundledInfluencerMarkdown(markdown, freshest.source.replace(process.cwd(), "").replace(/^\//, ""));
   } catch {
     return {
       asOf: "",

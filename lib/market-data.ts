@@ -1,4 +1,5 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import config from "@/config.json";
 import { readLatestSqlOptionSnapshot } from "@/lib/option-sql";
@@ -232,8 +233,9 @@ async function collectStockNews(statuses: SourceStatus[]): Promise<Record<string
 }
 
 function parseInfluencerMarkdown(markdown: string) {
-  const asOf = markdown.match(/^# Daily Collection\s+[—-]\s+(.+)$/m)?.[1]?.trim() ?? "";
-  const headingPattern = /^###\s+(.+?)\s+\(@([^)]+)\)\s+[—-]\s+(.+)$/gm;
+  const asOf = markdown.match(/^# Daily(?: AI Tech Updates| Collection)\s+[—-]\s+(.+)$/m)?.[1]?.trim() ?? "";
+  const defaultDomain = markdown.startsWith("# Daily AI Tech Updates") ? "AI / Tech" : "";
+  const headingPattern = /^###\s+(.+?)\s+\(@([^)]+)\)(?:[ \t]+[—-][ \t]+(.+))?$/gm;
   const headings = [...markdown.matchAll(headingPattern)];
   return headings.map((match, index) => {
     const start = (match.index ?? 0) + match[0].length;
@@ -247,11 +249,47 @@ function parseInfluencerMarkdown(markdown: string) {
     return {
       name: match[1]?.trim() ?? "",
       handle: match[2]?.trim() ?? "",
-      domain: match[3]?.trim() ?? "",
+      domain: match[3]?.trim() || defaultDomain,
       tweets,
       asOf,
     };
   });
+}
+
+function influencerSourceRank(source: string, markdown: string) {
+  return markdown.match(/^# Daily(?: AI Tech Updates| Collection)\s+[—-]\s+(\d{4}-\d{2}-\d{2})$/m)?.[1]
+    ?? source.match(/(\d{4}-\d{2}-\d{2})\.md$/)?.[1]
+    ?? "";
+}
+
+async function readFreshestLocalInfluencerMarkdown(sourceRoot: string) {
+  const root = join(/*turbopackIgnore: true*/ process.cwd(), "data", "influencer-and-press-collection-agent");
+  const candidates = [{ source: `${sourceRoot}/latest.md`, path: join(root, "latest.md") }];
+  try {
+    const aiTechFiles = await readdir(join(root, "daily-ai-tech"));
+    candidates.push(...aiTechFiles.filter((file) => /^\d{4}-\d{2}-\d{2}\.md$/.test(file)).map((file) => ({
+      source: `${sourceRoot}/daily-ai-tech/${file}`,
+      path: join(root, "daily-ai-tech", file),
+    })));
+  } catch {
+    // The bundled AI tech directory is optional; latest.md remains the baseline source.
+  }
+
+  const readable = await Promise.all(candidates.map(async (candidate) => {
+    try {
+      const markdown = await readFile(candidate.path, "utf8");
+      return { source: candidate.source, markdown, rank: influencerSourceRank(candidate.source, markdown) };
+    } catch {
+      return null;
+    }
+  }));
+
+  const freshest = readable
+    .filter((item): item is { source: string; markdown: string; rank: string } => Boolean(item))
+    .sort((a, b) => b.rank.localeCompare(a.rank))[0];
+
+  if (!freshest) throw new Error("No readable influencer markdown source");
+  return freshest;
 }
 
 function classifyInfluencerPost(text: string) {
@@ -304,7 +342,11 @@ async function collectInfluencerMockAnalysis(statuses: SourceStatus[]) {
       markdown = await fetchText(remoteSource, 12000);
       if (!markdown) source = localSource;
     }
-    if (!markdown) markdown = await readFile(localSource, "utf8");
+    if (!markdown) {
+      const local = await readFreshestLocalInfluencerMarkdown(sourceRoot);
+      markdown = local.markdown;
+      source = local.source;
+    }
     const blocks = parseInfluencerMarkdown(markdown);
     const items = blocks
       .map((block) => {
