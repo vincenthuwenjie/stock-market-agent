@@ -976,7 +976,7 @@ export function MarketDashboard({ initialData }: Props) {
                   </div>
                   <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
                 </div>
-                {item.profileBio ? <p className="analysis-bio">{item.profileBio}</p> : null}
+                {item.profileBio ? <p className="analysis-bio"><TranslatedText value={item.profileBio} lang={lang} /></p> : null}
                 <div className="section-title"><span>{localize(item.theme, lang)}</span><span>{localize("mock read", lang)}</span></div>
                 <p className="analysis-thesis"><TranslatedText value={item.thesis} lang={lang} /></p>
                 <ul className="tweet-list">
