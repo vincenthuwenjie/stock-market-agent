@@ -725,6 +725,7 @@ export function MarketDashboard({ initialData }: Props) {
     <main className="shell">
       <header className="topbar">
         <div className="brand">
+          <img className="brand-icon" src="/bull.png" alt="" />
           <h1>Stock Market Agent</h1>
           <span className="stamp">{localize("Updated", lang)} {shortTime(data.generatedAt)}</span>
         </div>

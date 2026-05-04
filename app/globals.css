@@ -59,9 +59,16 @@ a:hover {
 
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
+}
+
+.brand-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 h1 {
