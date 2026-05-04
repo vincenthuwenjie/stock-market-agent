@@ -1,5 +1,5 @@
 {
-  "watchlist": ["AAPL", "MSFT", "AMZN", "GOOG", "META", "NVDA", "TSLA"],
+  "watchlist": ["AAPL", "MSFT", "AMZN", "GOOGL", "META", "NVDA", "TSLA"],
   "macroTickers": {
     "QQQ": "QQQ",
     "SPY": "SPY",
