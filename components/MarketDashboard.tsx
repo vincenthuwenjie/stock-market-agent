@@ -566,6 +566,14 @@ function formatMetricName(value: string) {
   return value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replaceAll("_", " ");
 }
 
+function utcDay(value: string) {
+  return Date.parse(`${value.slice(0, 10)}T00:00:00.000Z`);
+}
+
+function dateKeyFromUtc(ms: number) {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
 function OptionLineChart({ points, metric }: { points: OptionHistoryPoint[]; metric: string }) {
   const numericPoints = points
     .map((point) => ({ date: point.date, value: numericValue(point.values[metric]) }))
@@ -577,28 +585,44 @@ function OptionLineChart({ points, metric }: { points: OptionHistoryPoint[]; met
   const height = 220;
   const padX = 44;
   const padY = 24;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const latestMs = numericPoints.length ? Math.max(...numericPoints.map((point) => utcDay(point.date))) : utcDay(dateKeyFromUtc(Date.now()));
+  const endMs = latestMs;
+  const startMs = endMs - 59 * dayMs;
   const values = numericPoints.map((point) => point.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || Math.max(Math.abs(max), 1);
-  const xFor = (index: number) => padX + (numericPoints.length === 1 ? (width - padX * 2) / 2 : index * ((width - padX * 2) / (numericPoints.length - 1)));
+  const xForDate = (date: string) => {
+    const offset = Math.max(0, Math.min(59, Math.round((utcDay(date) - startMs) / dayMs)));
+    return padX + (offset / 59) * (width - padX * 2);
+  };
   const yFor = (value: number) => height - padY - ((value - min) / span) * (height - padY * 2);
-  const line = numericPoints.map((point, index) => `${index ? "L" : "M"} ${xFor(index).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
+  const line = numericPoints.map((point, index) => `${index ? "L" : "M"} ${xForDate(point.date).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
   const first = numericPoints[0];
   const last = numericPoints.at(-1) ?? first;
+  const ticks = [0, 14, 29, 44, 59].map((offset) => {
+    const date = dateKeyFromUtc(startMs + offset * dayMs);
+    const x = padX + (offset / 59) * (width - padX * 2);
+    return { date, x };
+  });
 
   return (
     <div className="chart-wrap">
       <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${metric} 60 day option history`}>
         <line x1={padX} x2={width - padX} y1={height - padY} y2={height - padY} />
         <line x1={padX} x2={padX} y1={padY} y2={height - padY} />
+        {ticks.map((tick) => (
+          <g key={tick.date}>
+            <line className="tick-line" x1={tick.x} x2={tick.x} y1={padY} y2={height - padY} />
+            <text x={tick.x} y={height - 5} textAnchor="middle">{tick.date.slice(5)}</text>
+          </g>
+        ))}
         <text x={padX - 8} y={padY + 4} textAnchor="end">{fmt(max)}</text>
         <text x={padX - 8} y={height - padY} textAnchor="end">{fmt(min)}</text>
-        <text x={padX} y={height - 5}>{first.date.slice(5)}</text>
-        <text x={width - padX} y={height - 5} textAnchor="end">{last.date.slice(5)}</text>
         {numericPoints.length > 1 ? <path d={line} /> : null}
-        {numericPoints.map((point, index) => (
-          <circle key={`${point.date}-${point.value}`} cx={xFor(index)} cy={yFor(point.value)} r={3}>
+        {numericPoints.map((point) => (
+          <circle key={`${point.date}-${point.value}`} cx={xForDate(point.date)} cy={yFor(point.value)} r={3}>
             <title>{point.date}: {fmt(point.value)}</title>
           </circle>
         ))}
