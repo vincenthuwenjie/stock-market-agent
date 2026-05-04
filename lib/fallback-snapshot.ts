@@ -27,12 +27,7 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
       const start = (match.index ?? 0) + match[0].length;
       const end = headings[index + 1]?.index ?? markdown.length;
       const body = markdown.slice(start, end);
-      const evidence = body
-        .split(/\r?\n/)
-        .filter((line) => line.startsWith("- "))
-        .map((line) => clipText(line.slice(2), 240))
-        .filter((line) => line && !/^likes:|^views:|^RT:/i.test(line))
-        .slice(0, 2);
+      const evidence = tweetEvidenceWithTime(body).slice(0, 2);
 
       const joined = evidence.join(" ").toLowerCase();
       const theme = joined.match(/fed|fomc|powell|treasury|yield|liquidity|美联储|财政部|收益率|流动性/)
@@ -73,6 +68,27 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
     summary: items.length ? "Bundled influencer mock analysis loaded instantly; live refresh runs in the background." : "No bundled influencer analysis available.",
     items,
   };
+}
+
+function tweetEvidenceWithTime(body: string) {
+  const lines = body.split(/\r?\n/);
+  const evidence: string[] = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.startsWith("- ")) continue;
+    const tweet = clipText(line.slice(2), 220);
+    if (!tweet || /^likes:|^views:|^RT:/i.test(tweet)) continue;
+
+    let timestamp = "";
+    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+      const nextLine = lines[cursor];
+      if (nextLine.startsWith("- ")) break;
+      timestamp = nextLine.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)?.[0] ?? timestamp;
+      if (timestamp) break;
+    }
+    evidence.push(timestamp ? `[${timestamp}] ${tweet}` : tweet);
+  }
+  return evidence;
 }
 
 function sourceRank(source: string, markdown: string) {

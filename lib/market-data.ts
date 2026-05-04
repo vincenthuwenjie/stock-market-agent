@@ -241,11 +241,7 @@ function parseInfluencerMarkdown(markdown: string) {
     const start = (match.index ?? 0) + match[0].length;
     const end = headings[index + 1]?.index ?? markdown.length;
     const body = markdown.slice(start, end);
-    const tweets = body
-      .split(/\r?\n/)
-      .filter((line) => line.startsWith("- "))
-      .map((line) => clipText(line.slice(2), 240))
-      .filter((line) => line && !/^likes:|^views:|^RT:/i.test(line));
+    const tweets = tweetEvidenceWithTime(body);
     return {
       name: match[1]?.trim() ?? "",
       handle: match[2]?.trim() ?? "",
@@ -254,6 +250,27 @@ function parseInfluencerMarkdown(markdown: string) {
       asOf,
     };
   });
+}
+
+function tweetEvidenceWithTime(body: string) {
+  const lines = body.split(/\r?\n/);
+  const evidence: string[] = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.startsWith("- ")) continue;
+    const tweet = clipText(line.slice(2), 220);
+    if (!tweet || /^likes:|^views:|^RT:/i.test(tweet)) continue;
+
+    let timestamp = "";
+    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+      const nextLine = lines[cursor];
+      if (nextLine.startsWith("- ")) break;
+      timestamp = nextLine.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)?.[0] ?? timestamp;
+      if (timestamp) break;
+    }
+    evidence.push(timestamp ? `[${timestamp}] ${tweet}` : tweet);
+  }
+  return evidence;
 }
 
 function influencerSourceRank(source: string, markdown: string) {
