@@ -712,6 +712,7 @@ function buildStockIndicator(data: MarketData, symbol: string): StockIndicator {
     ma30: movingAverage(series, 30),
     ma60: movingAverage(series, 60),
     ma180: movingAverage(series, 180),
+    atr14: atrProxy(series),
     option: data.options[symbol] ?? emptyOption("unavailable"),
     source: quote?.source ?? "unavailable",
     timestamp: quote?.timestamp ?? "",

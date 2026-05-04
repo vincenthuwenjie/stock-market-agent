@@ -89,7 +89,9 @@ const UI_ZH: Record<string, string> = {
   "Asset": "资产",
   "Ticker": "股票代码",
   "Price": "价格",
-  "Max Pain": "最大痛点",
+  "Max Pain": "期权最大痛点",
+  "Option MaxPain": "期权最大痛点",
+  "1x ATR Stop": "一倍 ATR 止损点",
   "Expiry": "到期",
   "Model Posture": "模型姿态",
   "Risk score": "风险分",
@@ -504,6 +506,11 @@ function fmt(value: Scalar | undefined, suffix = "") {
   return `${value}${suffix}`;
 }
 
+function subtractScalar(left: Scalar | undefined, right: Scalar | undefined): Scalar {
+  if (typeof left !== "number" || typeof right !== "number") return "N/A";
+  return Number((left - right).toFixed(2));
+}
+
 function tone(value: Scalar | undefined) {
   if (typeof value !== "number") return "";
   if (value > 0) return "green";
@@ -867,7 +874,7 @@ export function MarketDashboard({ initialData }: Props) {
           <div className="scroll">
             <table>
               <thead>
-                <tr><th>{localize("Ticker", lang)}</th><th>{localize("Price", lang)}</th><th>1D</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>{localize("Max Pain", lang)}</th><th>IV</th></tr>
+                <tr><th>{localize("Ticker", lang)}</th><th>{localize("Price", lang)}</th><th>1D</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>ATR</th><th>{localize("1x ATR Stop", lang)}</th><th>{localize("Option MaxPain", lang)}</th><th>IV</th></tr>
               </thead>
               <tbody>
                 {stockRows.map(([ticker, item]) => (
@@ -880,6 +887,8 @@ export function MarketDashboard({ initialData }: Props) {
                     <td>{fmt(item.ma30)}</td>
                     <td>{fmt(item.ma60)}</td>
                     <td>{fmt(item.ma180)}</td>
+                    <td>{fmt(item.atr14)}</td>
+                    <td>{fmt(subtractScalar(item.price, item.atr14))}</td>
                     <td>{fmt(item.option.maxPain)}</td>
                     <td>{fmt(item.option.iv, "%")}</td>
                   </tr>

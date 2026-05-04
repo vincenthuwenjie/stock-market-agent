@@ -397,7 +397,7 @@ th {
 
 .metric-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-content: start;
   gap: 6px;
   padding: 8px;
@@ -649,6 +649,6 @@ th {
 
   .metric-tabs {
     display: grid;
-    grid-template-columns: repeat(2, minmax(130px, 1fr));
+    grid-template-columns: repeat(3, minmax(110px, 1fr));
   }
 }

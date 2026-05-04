@@ -52,6 +52,7 @@ export type StockIndicator = {
   ma30: Scalar;
   ma60: Scalar;
   ma180: Scalar;
+  atr14: Scalar;
   option: OptionSummary;
   source: string;
   timestamp: string;
