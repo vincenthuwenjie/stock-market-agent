@@ -8,6 +8,7 @@ type Props = {
 };
 
 type Lang = "zh" | "en";
+type InfluencerLocaleFilter = "all" | "english" | "chinese";
 type OptionHistoryPoint = {
   date: string;
   asOf: string | null;
@@ -102,6 +103,7 @@ const UI_ZH: Record<string, string> = {
   "No major drivers.": "暂无主要驱动因素。",
   "No focus list.": "暂无关注清单。",
   "Influencer AI Mock Analysis": "影响者 AI 模拟分析",
+  "All Influencers": "全部博主",
   "English Influencer": "英文博主",
   "Chinese Influencer": "中文博主",
   "mock read": "模拟解读",
@@ -673,6 +675,7 @@ export function MarketDashboard({ initialData }: Props) {
   const [activeTicker, setActiveTicker] = useState(initialData.meta?.watchlist?.[0] ?? "AAPL");
   const [activeOptionTicker, setActiveOptionTicker] = useState("QQQ");
   const [activeOptionMetric, setActiveOptionMetric] = useState("iv");
+  const [influencerLocaleFilter, setInfluencerLocaleFilter] = useState<InfluencerLocaleFilter>("all");
   const [optionHistory, setOptionHistory] = useState<OptionHistory | null>(null);
   const [isOptionHistoryLoading, setIsOptionHistoryLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -744,6 +747,19 @@ export function MarketDashboard({ initialData }: Props) {
     summary: "Influencer mock analysis unavailable in this snapshot.",
     items: [],
   };
+  const influencerLocaleCounts = influencerMockAnalysis.items.reduce<Record<InfluencerLocaleFilter, number>>((counts, item) => {
+    counts[influencerLocale(item)] += 1;
+    counts.all += 1;
+    return counts;
+  }, { all: 0, english: 0, chinese: 0 });
+  const filteredInfluencerItems = influencerLocaleFilter === "all"
+    ? influencerMockAnalysis.items
+    : influencerMockAnalysis.items.filter((item) => influencerLocale(item) === influencerLocaleFilter);
+  const influencerFilterTabs: Array<{ key: InfluencerLocaleFilter; label: string }> = [
+    { key: "all", label: "All Influencers" },
+    { key: "english", label: "English Influencer" },
+    { key: "chinese", label: "Chinese Influencer" },
+  ];
 
   return (
     <main className="shell">
@@ -973,10 +989,24 @@ export function MarketDashboard({ initialData }: Props) {
           {lang === "en" ? <p className="rec-text">{influencerMockAnalysis.summary}</p> : null}
           <span className="stamp" title={influencerMockAnalysis.source}>{localizeSource(influencerMockAnalysis.source, lang)}</span>
         </div>
+        <div className="analysis-filter" role="tablist" aria-label="Influencer language filter">
+          {influencerFilterTabs.map((filter) => (
+            <button
+              aria-selected={influencerLocaleFilter === filter.key}
+              className={`analysis-filter-tag ${influencerLocaleFilter === filter.key ? "active" : ""}`}
+              key={filter.key}
+              onClick={() => setInfluencerLocaleFilter(filter.key)}
+              role="tab"
+              type="button"
+            >
+              <span>{localize(filter.label, lang)}</span>
+              <strong>{influencerLocaleCounts[filter.key]}</strong>
+            </button>
+          ))}
+        </div>
         {influencerMockAnalysis.items.length ? (
           <div className="analysis-grid">
-            {influencerMockAnalysis.items.map((item) => {
-              const localeLabel = influencerLocale(item) === "chinese" ? "Chinese Influencer" : "English Influencer";
+            {filteredInfluencerItems.map((item) => {
               return (
                 <article className="analysis-card" key={`${item.handle}-${item.theme}`}>
                   <div className="analysis-top">
@@ -984,10 +1014,7 @@ export function MarketDashboard({ initialData }: Props) {
                       <strong>{item.name}</strong>
                       <span>{item.handle} · {localize(item.domain, lang)}</span>
                     </div>
-                    <div className="analysis-badges">
-                      <span className="analysis-locale">{localize(localeLabel, lang)}</span>
-                      <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
-                    </div>
+                    <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
                   </div>
                   {item.profileBio ? <p className="analysis-bio"><TranslatedText value={item.profileBio} lang={lang} /></p> : null}
                   <div className="section-title"><span>{localize(item.theme, lang)}</span><span>{localize("mock read", lang)}</span></div>
