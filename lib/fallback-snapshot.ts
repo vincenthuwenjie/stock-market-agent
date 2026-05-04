@@ -24,6 +24,17 @@ function clipText(value: string, length = 180) {
   return text.length > length ? `${text.slice(0, length - 1)}...` : text;
 }
 
+function influencerLocaleFromContent(...values: string[]): InfluencerMockAnalysisItem["locale"] {
+  return values.some((value) => /[\u3400-\u9fff]/.test(value)) ? "chinese" : "english";
+}
+
+function selectInfluencerItems(scored: Array<{ score: number; item: InfluencerMockAnalysisItem }>) {
+  const sorted = scored.sort((a, b) => b.score - a.score);
+  const english = sorted.filter(({ item }) => item.locale === "english").slice(0, 12);
+  const chinese = sorted.filter(({ item }) => item.locale === "chinese").slice(0, 12);
+  return [...english, ...chinese].map(({ item }) => item);
+}
+
 function parseBundledInfluencerMarkdown(markdown: string, source = "data/influencer-and-press-collection-agent/latest.md") {
   const asOf = markdown.match(/^# Daily(?: AI Tech Updates| Collection)\s+[—-]\s+(.+)$/m)?.[1]?.trim() ?? "";
   const defaultDomain = markdown.startsWith("# Daily AI Tech Updates") ? "AI / Tech" : "";
@@ -32,7 +43,7 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
   const priority = new Set(["Corsica267", "KobeissiLetter", "NickTimiraos", "DeItaone", "zerohedge", "unusual_whales", "Balloon_Capital", "TJ_Research"]);
   const profileMap = bundledInfluencerProfiles();
 
-  const items = headings
+  const scored = headings
     .map((match, index) => {
       const start = (match.index ?? 0) + match[0].length;
       const end = headings[index + 1]?.index ?? markdown.length;
@@ -60,6 +71,11 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
           name: match[1]?.trim() ?? "",
           handle: `@${match[2]?.trim() ?? ""}`,
           profileBio: parseInfluencerProfileBio(body) || profileMap[(match[2] ?? "").toLowerCase()] || "",
+          locale: influencerLocaleFromContent(
+            match[1]?.trim() ?? "",
+            parseInfluencerProfileBio(body),
+            tweets.map((tweet) => `${tweet.text} ${tweet.quote?.author ?? ""} ${tweet.quote?.text ?? ""}`).join(" "),
+          ),
           domain: match[3]?.trim() || defaultDomain,
           theme,
           stance,
@@ -70,10 +86,8 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
         } satisfies InfluencerMockAnalysisItem,
       };
     })
-    .filter(({ item }) => item.evidence.length)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 12)
-    .map(({ item }) => item);
+    .filter(({ item }) => item.evidence.length);
+  const items = selectInfluencerItems(scored);
 
   return {
     asOf,

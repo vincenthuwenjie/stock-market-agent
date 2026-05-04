@@ -302,6 +302,17 @@ function formatTweetEvidence(record: InfluencerTweetRecord) {
   return `${prefix}${record.text}${quote}`;
 }
 
+function influencerLocaleFromContent(...values: string[]): InfluencerMockAnalysisItem["locale"] {
+  return values.some((value) => /[\u3400-\u9fff]/.test(value)) ? "chinese" : "english";
+}
+
+function selectInfluencerItems(scored: Array<{ score: number; item: InfluencerMockAnalysisItem }>) {
+  const sorted = scored.sort((a, b) => b.score - a.score);
+  const english = sorted.filter(({ item }) => item.locale === "english").slice(0, 12);
+  const chinese = sorted.filter(({ item }) => item.locale === "chinese").slice(0, 12);
+  return [...english, ...chinese].map(({ item }) => item);
+}
+
 function influencerSourceRank(source: string, markdown: string) {
   return markdown.match(/^# Daily(?: AI Tech Updates| Collection)\s+[—-]\s+(\d{4}-\d{2}-\d{2})$/m)?.[1]
     ?? source.match(/(\d{4}-\d{2}-\d{2})\.md$/)?.[1]
@@ -415,7 +426,7 @@ async function collectInfluencerMockAnalysis(statuses: SourceStatus[]) {
       Promise.resolve(parseInfluencerMarkdown(markdown)),
       readLocalInfluencerProfiles(),
     ]);
-    const items = blocks
+    const scored = blocks
       .map((block) => {
         const tweetRecords = block.tweetRecords.slice(0, 2);
         const evidence = tweetRecords.map(formatTweetEvidence);
@@ -431,6 +442,11 @@ async function collectInfluencerMockAnalysis(statuses: SourceStatus[]) {
             name: block.name,
             handle: `@${block.handle}`,
             profileBio: block.profileBio || profileMap[block.handle.toLowerCase()] || "",
+            locale: influencerLocaleFromContent(
+              block.name,
+              block.profileBio,
+              tweetRecords.map((tweet) => `${tweet.text} ${tweet.quote?.author ?? ""} ${tweet.quote?.text ?? ""}`).join(" "),
+            ),
             domain: block.domain,
             theme,
             stance: stanceValue,
@@ -441,10 +457,8 @@ async function collectInfluencerMockAnalysis(statuses: SourceStatus[]) {
           } satisfies InfluencerMockAnalysisItem,
         };
       })
-      .filter(({ item }) => item.evidence.length)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 12)
-      .map(({ item }) => item);
+      .filter(({ item }) => item.evidence.length);
+    const items = selectInfluencerItems(scored);
 
     const themeCounts = items.reduce<Record<string, number>>((counts, item) => {
       counts[item.theme] = (counts[item.theme] ?? 0) + 1;

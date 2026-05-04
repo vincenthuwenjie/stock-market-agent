@@ -62,6 +62,7 @@ export type InfluencerMockAnalysisItem = {
   name: string;
   handle: string;
   profileBio?: string;
+  locale?: "english" | "chinese";
   domain: string;
   theme: string;
   stance: "bullish" | "bearish" | "neutral" | "watch";
