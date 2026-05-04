@@ -58,6 +58,15 @@ def fetch_recent_tweets(handle: str, max_tweets: int) -> list[dict]:
         if not isinstance(item, dict):
             continue
         metrics = item.get("metrics") or {}
+        quoted = item.get("quotedTweet") or {}
+        quoted_author = quoted.get("author") or {}
+        quote_context = None
+        if isinstance(quoted, dict) and quoted.get("text"):
+            quote_context = {
+                "author": quoted_author.get("name") or quoted_author.get("screenName") or "",
+                "handle": quoted_author.get("screenName") or "",
+                "text": str(quoted.get("text") or "")[:500],
+            }
         tweets.append(
             {
                 "id": item.get("id", ""),
@@ -67,9 +76,35 @@ def fetch_recent_tweets(handle: str, max_tweets: int) -> list[dict]:
                 "retweets": metrics.get("retweets", 0),
                 "replies": metrics.get("replies", 0),
                 "views": metrics.get("views", 0),
+                "quote": quote_context,
             }
         )
     return tweets
+
+
+def fetch_user_profile(handle: str) -> dict:
+    clean = handle.lstrip("@")
+    try:
+        result = subprocess.run(
+            ["twitter", "user", clean, "--json"],
+            capture_output=True,
+            text=True,
+            timeout=12,
+        )
+    except (subprocess.TimeoutExpired, OSError):
+        return {}
+
+    if result.returncode != 0 or not result.stdout.strip():
+        return {}
+    envelope = _parse_json_output(result.stdout)
+    if not envelope or not envelope.get("ok") or not isinstance(envelope.get("data"), dict):
+        return {}
+    data = envelope["data"]
+    return {
+        "name": data.get("name", "") or clean,
+        "bio": data.get("bio", "") or "",
+        "followers": data.get("followers", 0) or 0,
+    }
 
 
 def parse_chinese_ai_influencers(path: Path) -> list[dict]:
@@ -146,6 +181,9 @@ def render_update_block(run_at: str, updates: list[dict]) -> str:
     ]
     for item in updates:
         lines.append(f"### {item['name']} ({item['handle']})")
+        bio = (item.get("bio") or "").replace("\n", " ").strip()
+        if bio:
+            lines.append(f"> Bio: {bio}")
         lines.append("")
         for tweet in item["tweets"]:
             text = (tweet.get("text") or "").replace("\n", " ").strip()
@@ -153,6 +191,13 @@ def render_update_block(run_at: str, updates: list[dict]) -> str:
             metrics = _tweet_metrics(tweet)
             if metrics:
                 lines.append(f"  - {metrics}")
+            quote = tweet.get("quote") or {}
+            quote_text = (quote.get("text") or "").replace("\n", " ").strip()
+            if quote_text:
+                quote_author = quote.get("author") or quote.get("handle") or "unknown"
+                quote_handle = quote.get("handle")
+                author_label = f"{quote_author} (@{quote_handle})" if quote_handle and not str(quote_author).endswith(f"@{quote_handle}") else str(quote_author)
+                lines.append(f"  - quote: {author_label} — {quote_text}")
             tweet_id = tweet.get("id", "")
             if tweet_id:
                 lines.append(f"  - https://x.com/{item['handle'].lstrip('@')}/status/{tweet_id}")
@@ -235,7 +280,13 @@ def run_watch(
             seen.add(tweet_id)
         if new_tweets:
             new_tweets.sort(key=lambda tweet: _tweet_timestamp(tweet))
-            updates.append({**item, "tweets": new_tweets})
+            profile = fetch_user_profile(handle)
+            updates.append({
+                **item,
+                "name": profile.get("name") or item["name"],
+                "bio": profile.get("bio") or item.get("bio", ""),
+                "tweets": new_tweets,
+            })
         known_tweets[handle] = set(list(seen)[-200:])
 
     output_file = ""

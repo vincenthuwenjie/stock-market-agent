@@ -103,6 +103,7 @@ const UI_ZH: Record<string, string> = {
   "No focus list.": "暂无关注清单。",
   "Influencer AI Mock Analysis": "影响者 AI 模拟分析",
   "mock read": "模拟解读",
+  "Quote": "引用上下文",
   "No influencer analysis available in this runtime.": "当前运行环境暂无影响者分析。",
   "Fed Liquidity": "美联储流动性",
   "Net Liquidity": "净流动性",
@@ -970,14 +971,28 @@ export function MarketDashboard({ initialData }: Props) {
               <article className="analysis-card" key={`${item.handle}-${item.theme}`}>
                 <div className="analysis-top">
                   <div>
-                    <strong><TranslatedText value={item.name} lang={lang} /></strong>
+                    <strong>{item.name}</strong>
                     <span>{item.handle} · {localize(item.domain, lang)}</span>
                   </div>
                   <span className={`pill ${stanceClass(item.stance)}`}>{localize(item.stance, lang)}</span>
                 </div>
+                {item.profileBio ? <p className="analysis-bio">{item.profileBio}</p> : null}
                 <div className="section-title"><span>{localize(item.theme, lang)}</span><span>{localize("mock read", lang)}</span></div>
                 <p className="analysis-thesis"><TranslatedText value={item.thesis} lang={lang} /></p>
-                <ul className="rec-list">{item.evidence.map((line) => <li key={line}><TranslatedText value={line} lang={lang} /></li>)}</ul>
+                <ul className="tweet-list">
+                  {(item.tweets?.length ? item.tweets : item.evidence.map((line) => ({ text: line, time: "", quote: undefined }))).map((tweet) => (
+                    <li key={`${tweet.time}-${tweet.text}`}>
+                      {tweet.time ? <span className="tweet-time">{tweet.time}</span> : null}
+                      <p><TranslatedText value={tweet.text} lang={lang} /></p>
+                      {tweet.quote ? (
+                        <blockquote>
+                          <strong>{localize("Quote", lang)} · {tweet.quote.author}</strong>
+                          <span><TranslatedText value={tweet.quote.text} lang={lang} /></span>
+                        </blockquote>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>

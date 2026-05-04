@@ -14,8 +14,16 @@
 | @chamath | Chamath Palihapitiya | 风投、All-In Podcast 主持人，宏观+科技评论 | Finance |
 | @zerohedge | ZeroHedge | 金融市场实时新闻，偏空/悲观叙事 | Finance |
 | @unusual_whales | Unusual Whales | 期权异动追踪、国会交易曝光 | Finance |
+| @DeItaone | Walter Bloomberg | 彭博终端新闻实时转发，最快的市场新闻源 | Finance |
 | @jimcramer | Jim Cramer | CNBC Mad Money 主持，反向指标 meme | Finance |
+| @markgurman | Mark Gurman | Bloomberg 记者，Apple 独家消息 | Finance |
 | @karpathy | Andrej Karpathy | 前 Tesla AI / OpenAI，AI 教育内容 | AI |
+| @ylecun | Yann LeCun | Meta Chief AI Scientist，开源 AI 倡导者 | AI |
+| @GaryBlack00 | Gary Black | 知名多头基金经理，TSLA/NVDA 深度分析 | Finance |
+| @wallaborostreetbets | WSB | Reddit WallStreetBets，散户情绪指标 | Finance |
+| @TickerCarl_ | Ticker Carl | 期权策略、短线交易 | Finance |
+| @balajis | Balaji Srinivasan | 前 a16z GP/CTO，网络国家、加密、地缘政治 | Crypto |
+| @pmarca | Marc Andreessen | a16z 创始人，科技乐观主义 | Tech |
 | @TrumpDailyPosts | Trump Daily Posts | 转发 Trump Truth Social 帖子+评论，278万粉 | Finance |
 | @The_RockTrading | The Rock Trading Group | 交易社区，20万粉 | Finance |
 
@@ -74,7 +82,6 @@
 | @darrencao2024 | Darren北美投资 | 📈 Sharing insights on Covered Call ETF / 分享 Covere，8k粉 | Finance |
 | @burrytracker | Michael Burry Stock Tracker ♟ | Tracking hedge funds and Burry’s stocks.  Powered ，475k粉 | Finance |
 | @NickTimiraos | Nick Timiraos | Chief economics correspondent, The Wall Street Jou，462k粉 | AI |
-| @DeItaone | *Walter Bloomberg | Promote your firm on our feed. For inquiries, DM o，1274k粉 | AI |
 | @KobeissiLetter | The Kobeissi Letter | Official X account for The Kobeissi Letter, an ind，1549k粉 | AI |
 | @WhiteHouse | The White House | The Golden Age of America Begins Right Now. 📱 Text，4134k粉 | AI |
 | @FoxNews | Fox News | Stay Ahead. Get Breaking News Here First. Download，28589k粉 | Finance |
@@ -106,6 +113,8 @@
 | @antoniayly | antoniayly | cooking @abetterweb3. prev @RepublicCrypto @YBBCap，7k粉 | Crypto |
 | @helloitsaustin | austin | doing growth marketing stuff @anthropicai，11k粉 | AI |
 | @kingluffywang | 北美王路飞 | 油管Up主，分享人工智障知识，视频揭露股票圈的割韭菜惯犯雷公 LEI（aka 老雷，雷公资本，LEI，38k粉 | AI |
+| @lifesinger | lifesinger | 待补充简介 | AI |
+| @SaitoWu | Saito Wu | 待补充简介 | AI |
 
 ## Press / Media Sources
 
@@ -129,4 +138,4 @@
 
 ---
 
-*最后更新: 2026-03-16*
+*最后更新: 2026-05-04*

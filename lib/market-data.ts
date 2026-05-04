@@ -46,6 +46,15 @@ type MarketData = {
   options: Record<string, OptionSummary>;
 };
 
+type InfluencerTweetRecord = {
+  text: string;
+  time: string;
+  quote?: {
+    author: string;
+    text: string;
+  };
+};
+
 type FredPoint = {
   date: string;
   value: number;
@@ -241,20 +250,26 @@ function parseInfluencerMarkdown(markdown: string) {
     const start = (match.index ?? 0) + match[0].length;
     const end = headings[index + 1]?.index ?? markdown.length;
     const body = markdown.slice(start, end);
-    const tweets = tweetEvidenceWithTime(body);
+    const tweetRecords = parseTweetRecords(body);
     return {
       name: match[1]?.trim() ?? "",
       handle: match[2]?.trim() ?? "",
       domain: match[3]?.trim() || defaultDomain,
-      tweets,
+      profileBio: parseInfluencerProfileBio(body),
+      tweetRecords,
+      tweets: tweetRecords.map(formatTweetEvidence),
       asOf,
     };
   });
 }
 
-function tweetEvidenceWithTime(body: string) {
+function parseInfluencerProfileBio(body: string) {
+  return body.match(/^>\s*(?:Bio|简介):\s*(.+)$/m)?.[1]?.trim() ?? "";
+}
+
+function parseTweetRecords(body: string): InfluencerTweetRecord[] {
   const lines = body.split(/\r?\n/);
-  const evidence: string[] = [];
+  const records: InfluencerTweetRecord[] = [];
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     if (!line.startsWith("- ")) continue;
@@ -262,15 +277,29 @@ function tweetEvidenceWithTime(body: string) {
     if (!tweet || /^likes:|^views:|^RT:/i.test(tweet)) continue;
 
     let timestamp = "";
+    let quote: InfluencerTweetRecord["quote"];
     for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
       const nextLine = lines[cursor];
       if (nextLine.startsWith("- ")) break;
       timestamp = nextLine.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)?.[0] ?? timestamp;
-      if (timestamp) break;
+      const quoteMatch = nextLine.match(/^\s+-\s*(?:quote|quoted|引用):\s*(.+?)\s+[—-]\s+(.+)$/i)
+        ?? nextLine.match(/^\s+-\s*(?:quote|quoted|引用):\s*(.+?):\s+(.+)$/i);
+      if (quoteMatch) {
+        quote = {
+          author: quoteMatch[1].trim(),
+          text: clipText(quoteMatch[2].trim(), 180),
+        };
+      }
     }
-    evidence.push(timestamp ? `[${timestamp}] ${tweet}` : tweet);
+    records.push({ text: tweet, time: timestamp, quote });
   }
-  return evidence;
+  return records;
+}
+
+function formatTweetEvidence(record: InfluencerTweetRecord) {
+  const prefix = record.time ? `[${record.time}] ` : "";
+  const quote = record.quote ? ` 引用：${record.quote.author} — ${record.quote.text}` : "";
+  return `${prefix}${record.text}${quote}`;
 }
 
 function influencerSourceRank(source: string, markdown: string) {
@@ -307,6 +336,24 @@ async function readFreshestLocalInfluencerMarkdown(sourceRoot: string) {
 
   if (!freshest) throw new Error("No readable influencer markdown source");
   return freshest;
+}
+
+async function readLocalInfluencerProfiles() {
+  try {
+    const root = join(/*turbopackIgnore: true*/ process.cwd(), "data", "influencer-and-press-collection-agent");
+    const markdown = await readFile(join(root, "sources.md"), "utf8");
+    const profiles: Record<string, string> = {};
+    for (const line of markdown.split(/\r?\n/)) {
+      if (!line.startsWith("| @")) continue;
+      const cols = line.split("|").slice(1, -1).map((col) => col.trim());
+      if (cols.length < 4) continue;
+      const handle = cols[0].replace(/^@/, "").toLowerCase();
+      profiles[handle] = cols[2];
+    }
+    return profiles;
+  } catch {
+    return {} as Record<string, string>;
+  }
 }
 
 function classifyInfluencerPost(text: string) {
@@ -364,10 +411,14 @@ async function collectInfluencerMockAnalysis(statuses: SourceStatus[]) {
       markdown = local.markdown;
       source = local.source;
     }
-    const blocks = parseInfluencerMarkdown(markdown);
+    const [blocks, profileMap] = await Promise.all([
+      Promise.resolve(parseInfluencerMarkdown(markdown)),
+      readLocalInfluencerProfiles(),
+    ]);
     const items = blocks
       .map((block) => {
-        const evidence = block.tweets.slice(0, 2);
+        const tweetRecords = block.tweetRecords.slice(0, 2);
+        const evidence = tweetRecords.map(formatTweetEvidence);
         const joined = evidence.join(" ");
         const theme = classifyInfluencerPost(joined);
         const stanceValue = stanceForInfluencerPost(joined);
@@ -379,12 +430,14 @@ async function collectInfluencerMockAnalysis(statuses: SourceStatus[]) {
           item: {
             name: block.name,
             handle: `@${block.handle}`,
+            profileBio: block.profileBio || profileMap[block.handle.toLowerCase()] || "",
             domain: block.domain,
             theme,
             stance: stanceValue,
             thesis: evidence[0] ? `${block.name}: ${clipText(evidence[0], 150)}` : `${block.name}: no recent market-relevant post extracted`,
             marketRead: marketReadForTheme(theme, stanceValue),
             evidence,
+            tweets: tweetRecords,
           } satisfies InfluencerMockAnalysisItem,
         };
       })

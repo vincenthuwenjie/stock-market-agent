@@ -6,6 +6,15 @@ import type { InfluencerMockAnalysisItem, MarketSnapshot } from "@/lib/types";
 
 const MISSING = "N/A" as const;
 
+type InfluencerTweetRecord = {
+  text: string;
+  time: string;
+  quote?: {
+    author: string;
+    text: string;
+  };
+};
+
 function stripTags(value: string) {
   return value.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 }
@@ -21,13 +30,15 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
   const headingPattern = /^###\s+(.+?)\s+\(@([^)]+)\)(?:[ \t]+[—-][ \t]+(.+))?$/gm;
   const headings = [...markdown.matchAll(headingPattern)];
   const priority = new Set(["Corsica267", "KobeissiLetter", "NickTimiraos", "DeItaone", "zerohedge", "unusual_whales", "Balloon_Capital", "TJ_Research"]);
+  const profileMap = bundledInfluencerProfiles();
 
   const items = headings
     .map((match, index) => {
       const start = (match.index ?? 0) + match[0].length;
       const end = headings[index + 1]?.index ?? markdown.length;
       const body = markdown.slice(start, end);
-      const evidence = tweetEvidenceWithTime(body).slice(0, 2);
+      const tweets = parseTweetRecords(body).slice(0, 2);
+      const evidence = tweets.map(formatTweetEvidence);
 
       const joined = evidence.join(" ").toLowerCase();
       const theme = joined.match(/fed|fomc|powell|treasury|yield|liquidity|美联储|财政部|收益率|流动性/)
@@ -48,12 +59,14 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
         item: {
           name: match[1]?.trim() ?? "",
           handle: `@${match[2]?.trim() ?? ""}`,
+          profileBio: parseInfluencerProfileBio(body) || profileMap[(match[2] ?? "").toLowerCase()] || "",
           domain: match[3]?.trim() || defaultDomain,
           theme,
           stance,
           thesis: evidence[0] ? `${match[1]?.trim()}: ${clipText(evidence[0], 150)}` : "No recent market-relevant post extracted",
           marketRead: "Bundled fallback read; live API refresh will replace this with the full mock analysis when available.",
           evidence,
+          tweets,
         } satisfies InfluencerMockAnalysisItem,
       };
     })
@@ -70,9 +83,30 @@ function parseBundledInfluencerMarkdown(markdown: string, source = "data/influen
   };
 }
 
-function tweetEvidenceWithTime(body: string) {
+function bundledInfluencerProfiles() {
+  try {
+    const source = join(process.cwd(), "data/influencer-and-press-collection-agent", "sources.md");
+    const markdown = readFileSync(source, "utf8");
+    const profiles: Record<string, string> = {};
+    for (const line of markdown.split(/\r?\n/)) {
+      if (!line.startsWith("| @")) continue;
+      const cols = line.split("|").slice(1, -1).map((col) => col.trim());
+      if (cols.length < 4) continue;
+      profiles[cols[0].replace(/^@/, "").toLowerCase()] = cols[2];
+    }
+    return profiles;
+  } catch {
+    return {} as Record<string, string>;
+  }
+}
+
+function parseInfluencerProfileBio(body: string) {
+  return body.match(/^>\s*(?:Bio|简介):\s*(.+)$/m)?.[1]?.trim() ?? "";
+}
+
+function parseTweetRecords(body: string): InfluencerTweetRecord[] {
   const lines = body.split(/\r?\n/);
-  const evidence: string[] = [];
+  const records: InfluencerTweetRecord[] = [];
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     if (!line.startsWith("- ")) continue;
@@ -80,15 +114,29 @@ function tweetEvidenceWithTime(body: string) {
     if (!tweet || /^likes:|^views:|^RT:/i.test(tweet)) continue;
 
     let timestamp = "";
+    let quote: InfluencerTweetRecord["quote"];
     for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
       const nextLine = lines[cursor];
       if (nextLine.startsWith("- ")) break;
       timestamp = nextLine.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)?.[0] ?? timestamp;
-      if (timestamp) break;
+      const quoteMatch = nextLine.match(/^\s+-\s*(?:quote|quoted|引用):\s*(.+?)\s+[—-]\s+(.+)$/i)
+        ?? nextLine.match(/^\s+-\s*(?:quote|quoted|引用):\s*(.+?):\s+(.+)$/i);
+      if (quoteMatch) {
+        quote = {
+          author: quoteMatch[1].trim(),
+          text: clipText(quoteMatch[2].trim(), 180),
+        };
+      }
     }
-    evidence.push(timestamp ? `[${timestamp}] ${tweet}` : tweet);
+    records.push({ text: tweet, time: timestamp, quote });
   }
-  return evidence;
+  return records;
+}
+
+function formatTweetEvidence(record: InfluencerTweetRecord) {
+  const prefix = record.time ? `[${record.time}] ` : "";
+  const quote = record.quote ? ` 引用：${record.quote.author} — ${record.quote.text}` : "";
+  return `${prefix}${record.text}${quote}`;
 }
 
 function sourceRank(source: string, markdown: string) {

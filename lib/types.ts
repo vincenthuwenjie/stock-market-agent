@@ -61,12 +61,21 @@ export type StockIndicator = {
 export type InfluencerMockAnalysisItem = {
   name: string;
   handle: string;
+  profileBio?: string;
   domain: string;
   theme: string;
   stance: "bullish" | "bearish" | "neutral" | "watch";
   thesis: string;
   marketRead: string;
   evidence: string[];
+  tweets?: Array<{
+    text: string;
+    time: string;
+    quote?: {
+      author: string;
+      text: string;
+    };
+  }>;
 };
 
 export type MarketSnapshot = {

@@ -545,10 +545,66 @@ th {
   font-size: 11px;
 }
 
+.analysis-bio {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .analysis-thesis {
   margin: 0;
   color: var(--ink);
   font-size: 13px;
+  line-height: 1.4;
+}
+
+.tweet-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tweet-list li {
+  display: grid;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: #0b0f14;
+}
+
+.tweet-time {
+  width: max-content;
+  color: var(--amber);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tweet-list p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tweet-list blockquote {
+  margin: 0;
+  padding-left: 8px;
+  border-left: 2px solid var(--line-strong);
+  display: grid;
+  gap: 3px;
+}
+
+.tweet-list blockquote strong {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.tweet-list blockquote span {
+  color: var(--muted);
+  font-size: 11px;
   line-height: 1.4;
 }
 
