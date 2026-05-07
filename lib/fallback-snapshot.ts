@@ -198,7 +198,7 @@ function emptyCompleteReports() {
   return {
     asOf: "",
     source: "https://boist.org/feed/",
-    summary: "Bo Zeng report index loads during live refresh.",
+    summary: "Bo Zeng report index loads during live refresh. Local private reports are disabled in the static fallback snapshot.",
     items: [],
   };
 }

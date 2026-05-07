@@ -1,5 +1,5 @@
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { extname, join, relative } from "node:path";
 
 import config from "@/config.json";
 import { readLatestSqlOptionSnapshot } from "@/lib/option-sql";
@@ -213,13 +213,168 @@ async function fetchBoistReports(limit = 12): Promise<CompleteReportItem[]> {
     .filter((item) => item.title && item.url);
 }
 
+function privateReportsEnabled() {
+  return process.env.ENABLE_PRIVATE_REPORTS === "1" && process.env.VERCEL !== "1";
+}
+
+function privateReportsRoot() {
+  return process.env.PRIVATE_REPORTS_DIR || join(process.cwd(), "private_reports");
+}
+
+function parseFrontmatter(markdown: string) {
+  const match = markdown.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+  if (!match) return { meta: {} as Record<string, string>, body: markdown };
+  const meta: Record<string, string> = {};
+  for (const line of (match[1] ?? "").split(/\r?\n/)) {
+    const pair = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+    if (!pair) continue;
+    meta[pair[1]] = pair[2].replace(/^["']|["']$/g, "").trim();
+  }
+  return { meta, body: markdown.slice(match[0].length) };
+}
+
+function parseTags(value: unknown) {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean).slice(0, 8);
+  if (typeof value !== "string") return [];
+  return value.split(",").map((tag) => tag.trim()).filter(Boolean).slice(0, 8);
+}
+
+function inferTitleFromMarkdown(markdown: string, fallback: string) {
+  return markdown.match(/^#\s+(.+)$/m)?.[1]?.trim() || fallback.replace(/\.[^.]+$/, "");
+}
+
+function htmlAttr(html: string, selector: RegExp) {
+  return decodeEntities(selector.exec(html)?.[1] ?? "").trim();
+}
+
+function htmlBlockText(html: string, tag: string) {
+  const match = html.match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)</${tag}>`, "i"));
+  return match ? stripTags(match[1] ?? "") : "";
+}
+
+function htmlMeta(html: string, names: string[]) {
+  for (const name of names) {
+    const escaped = escapeRegex(name);
+    const byName = htmlAttr(html, new RegExp(`<meta\\b(?=[^>]*(?:name|property)=["']${escaped}["'])[^>]*content=["']([^"']*)["'][^>]*>`, "i"));
+    if (byName) return byName;
+    const byContentFirst = htmlAttr(html, new RegExp(`<meta\\b(?=[^>]*content=["']([^"']*)["'])(?=[^>]*(?:name|property)=["']${escaped}["'])[^>]*>`, "i"));
+    if (byContentFirst) return byContentFirst;
+  }
+  return "";
+}
+
+function reportFromHtml(html: string, fallbackPath: string): CompleteReportItem | null {
+  const title = htmlMeta(html, ["og:title", "twitter:title"]) || htmlBlockText(html, "title") || fallbackPath.replace(/\.[^.]+$/, "");
+  const article = htmlBlockText(html, "article") || htmlBlockText(html, "main") || htmlBlockText(html, "body");
+  const body = clipText(article, 8000);
+  return reportFromRecord({
+    title,
+    summary: htmlMeta(html, ["description", "og:description", "twitter:description"]),
+    source: htmlMeta(html, ["og:site_name"]) || "local private html",
+    author: htmlMeta(html, ["author", "article:author"]) || "Bo Zeng",
+    publishedAt: htmlMeta(html, ["article:published_time", "date", "pubdate"]),
+    url: htmlMeta(html, ["og:url"]) || `local://${fallbackPath}`,
+    body,
+  }, fallbackPath);
+}
+
+function reportFromRecord(record: Record<string, unknown>, fallbackPath: string): CompleteReportItem | null {
+  const title = typeof record.title === "string" ? record.title.trim() : "";
+  const body = typeof record.body === "string" ? record.body.trim() : typeof record.content === "string" ? record.content.trim() : "";
+  if (!title && !body) return null;
+  return {
+    title: title || inferTitleFromMarkdown(body, fallbackPath),
+    summary: clipText(typeof record.summary === "string" ? record.summary : body, 260),
+    source: typeof record.source === "string" ? record.source : "local private reports",
+    author: typeof record.author === "string" ? record.author : "Bo Zeng",
+    publishedAt: normalizeDate(typeof record.publishedAt === "string" ? record.publishedAt : typeof record.date === "string" ? record.date : ""),
+    url: typeof record.url === "string" ? record.url : `local://${fallbackPath}`,
+    tags: parseTags(record.tags),
+    body,
+    storagePath: fallbackPath,
+    isPrivate: true,
+  };
+}
+
+function reportFromMarkdown(markdown: string, fallbackPath: string): CompleteReportItem | null {
+  const { meta, body } = parseFrontmatter(markdown);
+  return reportFromRecord({
+    title: meta.title || inferTitleFromMarkdown(body, fallbackPath),
+    summary: meta.summary,
+    source: meta.source || "local private reports",
+    author: meta.author || "Bo Zeng",
+    publishedAt: meta.publishedAt || meta.date,
+    url: meta.url || `local://${fallbackPath}`,
+    tags: meta.tags,
+    body,
+  }, fallbackPath);
+}
+
+async function listReportFiles(root: string, prefix = ""): Promise<string[]> {
+  try {
+    const entries = await readdir(join(root, prefix), { withFileTypes: true });
+    const nested = await Promise.all(entries.map(async (entry) => {
+      const entryPath = join(prefix, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name.toLowerCase().endsWith("_files")) return [];
+        return listReportFiles(root, entryPath);
+      }
+      const extension = extname(entry.name).toLowerCase();
+      if (entry.name.toLowerCase() === "readme.md") return [];
+      return [".md", ".markdown", ".json", ".html", ".htm"].includes(extension) ? [entryPath] : [];
+    }));
+    return nested.flat();
+  } catch {
+    return [];
+  }
+}
+
+async function readPrivateReports(limit = 24): Promise<CompleteReportItem[]> {
+  if (!privateReportsEnabled()) return [];
+  const root = privateReportsRoot();
+  const files = await listReportFiles(root);
+  const reports = await Promise.all(files.map(async (file) => {
+    const absolutePath = join(root, file);
+    const storagePath = relative(process.cwd(), absolutePath) || file;
+    try {
+      const text = await readFile(absolutePath, "utf8");
+      if (extname(file).toLowerCase() === ".json") {
+        const parsed = JSON.parse(text) as Record<string, unknown> | Array<Record<string, unknown>>;
+        const records = Array.isArray(parsed) ? parsed : [parsed];
+        return records.map((record, index) => reportFromRecord(record, records.length > 1 ? `${storagePath}#${index + 1}` : storagePath));
+      }
+      if ([".html", ".htm"].includes(extname(file).toLowerCase())) {
+        return [reportFromHtml(text, storagePath)];
+      }
+      return [reportFromMarkdown(text, storagePath)];
+    } catch {
+      return [];
+    }
+  }));
+  return reports
+    .flat()
+    .filter((item): item is CompleteReportItem => Boolean(item))
+    .sort((a, b) => (Date.parse(b.publishedAt) || 0) - (Date.parse(a.publishedAt) || 0))
+    .slice(0, limit);
+}
+
 async function collectCompleteReports(statuses: SourceStatus[]) {
-  const items = await fetchBoistReports(12);
-  statuses.push(status("reports:boist.org", items.length ? "ok" : "missing", items.length ? `${items.length} public RSS report items` : "RSS unavailable or empty"));
+  const [rssItems, privateItems] = await Promise.all([fetchBoistReports(12), readPrivateReports(24)]);
+  const items = [...privateItems, ...rssItems];
+  statuses.push(status("reports:boist.org", rssItems.length ? "ok" : "missing", rssItems.length ? `${rssItems.length} public RSS report items` : "RSS unavailable or empty"));
+  statuses.push(status(
+    "reports:local-private",
+    privateReportsEnabled() ? (privateItems.length ? "ok" : "empty") : "skipped",
+    privateReportsEnabled()
+      ? `${privateItems.length} private local report files loaded from ${privateReportsRoot()}`
+      : "disabled outside local runtime; set ENABLE_PRIVATE_REPORTS=1 locally",
+  ));
   return {
     asOf: items[0]?.publishedAt ?? "",
-    source: "https://boist.org/feed/",
-    summary: "Bo Zeng report index from public RSS. Subscription-only full text is not mirrored; open source link for the complete report.",
+    source: privateItems.length ? `${privateReportsRoot()} + https://boist.org/feed/` : "https://boist.org/feed/",
+    summary: privateItems.length
+      ? "Local private reports are loaded only on this computer; public deployment remains limited to the RSS index."
+      : "Bo Zeng report index from public RSS. Subscription-only full text is not mirrored; open source link for the complete report.",
     items,
   };
 }

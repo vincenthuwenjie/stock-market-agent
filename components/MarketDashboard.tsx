@@ -102,8 +102,10 @@ const UI_ZH: Record<string, string> = {
   "Focus": "关注",
   "No major drivers.": "暂无主要驱动因素。",
   "No focus list.": "暂无关注清单。",
-  "Full Reports": "比较完整的报告",
+  "Full Reports": "大V完整思考的报告",
   "Open report": "打开报告",
+  "Local private": "本机私有",
+  "Local file": "本地文件",
   "No complete reports available in this runtime.": "当前运行环境暂无完整报告索引。",
   "Influencer AI Mock Analysis": "影响者 AI 模拟分析",
   "All Influencers": "全部博主",
@@ -805,7 +807,7 @@ export function MarketDashboard({ initialData }: Props) {
             <div className="panel-title"><span className="dot" /><strong>{localize("宏观新闻", lang)}</strong></div>
             <div className="panel-actions">{(data.macroNews ?? []).length} {localize("items", lang)}</div>
           </header>
-          <div className="scroll"><NewsList items={data.macroNews ?? []} lang={lang} /></div>
+          <div className="scroll panel-scroll" tabIndex={0} aria-label="Macro news panel body"><NewsList items={data.macroNews ?? []} lang={lang} /></div>
         </article>
 
         <article className="panel">
@@ -813,7 +815,7 @@ export function MarketDashboard({ initialData }: Props) {
             <div className="panel-title"><span className="dot" /><strong>{localize("个股新闻", lang)}</strong></div>
             <div className="panel-actions">{watchlist.length} {localize("tickers", lang)}</div>
           </header>
-          <div className="scroll">
+          <div className="scroll panel-scroll" tabIndex={0} aria-label="Stock news panel body">
             <div className="tabs">
               {watchlist.map((ticker) => (
                 <button className={`tab ${ticker === activeTicker ? "active" : ""}`} key={ticker} onClick={() => setActiveTicker(ticker)} type="button">
@@ -830,7 +832,7 @@ export function MarketDashboard({ initialData }: Props) {
             <div className="panel-title"><span className="dot" /><strong>{localize("宏观指标", lang)}</strong></div>
             <div className="panel-actions">{localize("Dynamic API", lang)}</div>
           </header>
-          <div className="scroll">
+          <div className="scroll panel-scroll" tabIndex={0} aria-label="Macro indicators panel body">
             <div className="metrics">
               <Metric label="SPY" value={spy.price} detail={`${fmt(spy.change1dPct, "%")} 1D`} lang={lang} />
               <Metric label="QQQ" value={qqq.price} detail={`${fmt(qqq.change1dPct, "%")} 1D`} lang={lang} />
@@ -913,7 +915,7 @@ export function MarketDashboard({ initialData }: Props) {
             <div className="panel-title"><span className="dot" /><strong>{localize("个股指标", lang)}</strong></div>
             <div className="panel-actions">{localize("M7 configurable", lang)}</div>
           </header>
-          <div className="scroll">
+          <div className="scroll panel-scroll" tabIndex={0} aria-label="Stock indicators panel body">
             <table>
               <thead>
                 <tr><th>{localize("Ticker", lang)}</th><th>{localize("Price", lang)}</th><th>1D</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>ATR</th><th>{localize("1x ATR Stop", lang)}</th><th>{localize("Option MaxPain", lang)}</th><th>IV</th></tr>
@@ -1004,7 +1006,10 @@ export function MarketDashboard({ initialData }: Props) {
               <article className="report-card" key={report.url}>
                 <div className="report-top">
                   <strong><TranslatedText value={report.title} lang={lang} /></strong>
-                  <span>{shortTime(report.publishedAt)} · {report.author}</span>
+                  <span>
+                    {shortTime(report.publishedAt)} · {report.author}
+                    {report.isPrivate ? ` · ${localize("Local private", lang)}` : ""}
+                  </span>
                 </div>
                 {report.summary ? <p><TranslatedText value={report.summary} lang={lang} /></p> : null}
                 {report.tags.length ? (
@@ -1012,7 +1017,11 @@ export function MarketDashboard({ initialData }: Props) {
                     {report.tags.map((tag) => <span key={`${report.url}-${tag}`}>{tag}</span>)}
                   </div>
                 ) : null}
-                <a href={report.url} rel="noreferrer" target="_blank">{localize("Open report", lang)}</a>
+                {report.isPrivate ? (
+                  <span className="local-report-path" title={report.storagePath}>{localize("Local file", lang)}: {report.storagePath}</span>
+                ) : (
+                  <a href={report.url} rel="noreferrer" target="_blank">{localize("Open report", lang)}</a>
+                )}
               </article>
             ))}
           </div>

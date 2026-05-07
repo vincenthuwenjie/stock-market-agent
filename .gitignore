@@ -5,3 +5,6 @@ out/
 *.tsbuildinfo
 __pycache__/
 .env*.local
+private_reports/**
+!private_reports/
+!private_reports/README.md

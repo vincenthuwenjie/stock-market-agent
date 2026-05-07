@@ -14,6 +14,31 @@ Open `http://127.0.0.1:3000/`.
 
 The dynamic API uses live RSS news plus Nasdaq quotes/history/options, Nasdaq EPS, Cboe VIX/VXN history, FRED liquidity data, the US Treasury yield curve, USD FX rates, and the bundled influencer collection at `data/influencer-and-press-collection-agent/latest.md`.
 
+## Local Private Reports
+
+Authorized personal-use reports can be stored on this computer only under:
+
+```text
+private_reports/
+```
+
+The directory contents are ignored by Git. Vercel also skips private reports even if the flag is accidentally set, so the public site remains limited to the public RSS report index.
+
+Start the local dashboard with private reports enabled:
+
+```bash
+cd /Users/bytedance/ohc/projects/stock-market-agent
+ENABLE_PRIVATE_REPORTS=1 npm run dev
+```
+
+Optional: point the loader at another local folder:
+
+```bash
+ENABLE_PRIVATE_REPORTS=1 PRIVATE_REPORTS_DIR=/Users/bytedance/Documents/boist-reports npm run dev
+```
+
+Supported file types are Markdown, JSON, and browser-saved HTML. See `private_reports/README.md` for the exact metadata format.
+
 ## Partner Option Data
 
 Production option data is persisted in Postgres, intended for Neon on Vercel:

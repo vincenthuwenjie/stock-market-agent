@@ -1,0 +1,5 @@
+private_reports/**
+.env*.local
+node_modules/
+.next/
+*.tsbuildinfo

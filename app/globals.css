@@ -215,6 +215,19 @@ h1 {
   overflow: auto;
 }
 
+.panel-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
+.panel-scroll:focus,
+.panel-scroll:focus-within {
+  overflow-y: auto;
+  outline: 1px solid rgba(77, 163, 255, 0.42);
+  outline-offset: -1px;
+}
+
 .list {
   display: grid;
   gap: 1px;
@@ -553,6 +566,14 @@ th {
   text-decoration: none;
 }
 
+.local-report-path {
+  overflow: hidden;
+  color: var(--amber);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .analysis-summary {
   display: flex;
   align-items: center;
@@ -767,8 +788,18 @@ th {
   }
 
   .dashboard {
+    display: block;
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, minmax(320px, 44vh));
+    grid-template-rows: none;
+  }
+
+  .dashboard .panel + .panel {
+    margin-top: 10px;
+  }
+
+  .panel-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .metrics {

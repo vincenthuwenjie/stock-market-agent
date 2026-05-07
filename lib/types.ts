@@ -87,6 +87,9 @@ export type CompleteReportItem = {
   publishedAt: string;
   url: string;
   tags: string[];
+  body?: string;
+  storagePath?: string;
+  isPrivate?: boolean;
 };
 
 export type MarketSnapshot = {
