@@ -646,6 +646,41 @@ th {
   min-height: 318px;
 }
 
+.detail-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.chart-card {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(260px, 1fr);
+  background: var(--panel);
+}
+
+.chart-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 34px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chart-card-head strong {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.chart-card-head span {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .influencer-analysis {
   border-top: 1px solid var(--line);
   background: #0b0f14;
@@ -960,7 +995,8 @@ th {
   .analysis-grid,
   .detail-header,
   .detail-grid,
-  .detail-kpis {
+  .detail-kpis,
+  .detail-chart-grid {
     grid-template-columns: 1fr;
   }
 

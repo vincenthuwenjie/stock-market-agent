@@ -73,6 +73,18 @@ export type MacroSignal = {
   unit: string;
   asOf: string;
   source: string;
+  history?: TimeSeriesPoint[];
+};
+
+export type BreadthIndicator = {
+  sampleSize: number;
+  ama10: Scalar;
+  ama30: Scalar;
+  ama60: Scalar;
+  ama180: Scalar;
+  ama60Change1w: Scalar;
+  ama60Change4w: Scalar;
+  history: TimeSeriesPoint[];
 };
 
 export type InfluencerMockAnalysisItem = {
@@ -147,9 +159,9 @@ export type MarketSnapshot = {
       formula: string;
       signals?: Record<string, MacroSignal>;
     };
-    fx: Record<string, { value: Scalar; change1dPct: Scalar; source: string }>;
-    bonds: Record<string, { yield: Scalar; change5dPct: Scalar; asOf: string; source: string }>;
-    breadth: Record<string, Record<string, Scalar | number>>;
+    fx: Record<string, { value: Scalar; change1dPct: Scalar; source: string; history?: TimeSeriesPoint[] }>;
+    bonds: Record<string, { yield: Scalar; change5dPct: Scalar; asOf: string; source: string; history?: TimeSeriesPoint[] }>;
+    breadth: Record<string, BreadthIndicator>;
     source: string;
   };
   stockIndicators: Record<string, StockIndicator>;

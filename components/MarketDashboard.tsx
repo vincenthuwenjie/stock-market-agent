@@ -845,6 +845,24 @@ export function MarketDashboard({ initialData }: Props) {
     liquiditySignals.hyOas,
     liquiditySignals.m2,
   ].filter((row): row is MacroSignal => Boolean(row));
+  const breadthTrendRows = Object.entries(breadth).map(([name, item]) => ({
+    label: `${name} AMA60`,
+    value: item.ama60 as Scalar,
+    change1w: item.ama60Change1w as Scalar,
+    change4w: item.ama60Change4w as Scalar,
+    history: (item.history ?? []) as TimeSeriesPoint[],
+  }));
+  const rateTrendRows = [
+    ["US 1Y", bonds.US1Y ?? EMPTY_YIELD],
+    ["US 10Y", bonds.US10Y ?? EMPTY_YIELD],
+    ["US 20Y", bonds.US20Y ?? EMPTY_YIELD],
+    ["US 30Y", bonds.US30Y ?? EMPTY_YIELD],
+  ].map(([label, item]) => ({ label: label as string, value: (item as typeof EMPTY_YIELD).yield, change: (item as typeof EMPTY_YIELD).change5dPct, history: ((item as typeof EMPTY_YIELD & { history?: TimeSeriesPoint[] }).history ?? []) }));
+  const fxTrendRows = [
+    ["USD/JPY", usdjpy],
+    ["USD/CNY", usdcny],
+    ["USD/EUR", usdeur],
+  ].map(([label, item]) => ({ label: label as string, value: (item as typeof EMPTY_VALUE).value, history: ((item as typeof EMPTY_VALUE & { history?: TimeSeriesPoint[] }).history ?? []) }));
   const detailMacroItem = macroAssetRows.find((row) => row.symbol === activeMacroDetail)?.item ?? spy;
   const detailStockItem = data.stockIndicators?.[activeStockDetail] ?? stockRows[0]?.[1];
   const influencerMockAnalysis = data.influencerMockAnalysis ?? {
@@ -946,6 +964,50 @@ export function MarketDashboard({ initialData }: Props) {
                     </tbody>
                   </table>
                 </section>
+                <section className="section">
+                  <div className="section-title"><span>{localize("Market Breadth", lang)}</span><span>AMA60</span></div>
+                  <div className="detail-chart-grid">
+                    {breadthTrendRows.map((row) => (
+                      <article className="chart-card" key={row.label}>
+                        <div className="chart-card-head"><strong>{row.label}</strong><span>{fmt(row.value, "%")} · 1W {fmt(row.change1w, "ppt")} · 4W {fmt(row.change4w, "ppt")}</span></div>
+                        <PriceTrendChart points={row.history} label={row.label} days={trendDays} lang={lang} />
+                      </article>
+                    ))}
+                  </div>
+                </section>
+                <section className="section">
+                  <div className="section-title"><span>{localize("Fed Liquidity", lang)}</span><span>DollarLiquidity / FRED</span></div>
+                  <div className="detail-chart-grid">
+                    {liquidityRows.map((row) => (
+                      <article className="chart-card" key={row.label}>
+                        <div className="chart-card-head"><strong>{localize(row.label, lang)}</strong><span>{fmt(row.value, row.unit)} · 1W {fmt(row.change1w, row.unit)} · 4W {fmt(row.change4w, row.unit)}</span></div>
+                        <PriceTrendChart points={row.history ?? []} label={localize(row.label, lang)} days={trendDays} lang={lang} />
+                      </article>
+                    ))}
+                  </div>
+                </section>
+                <section className="section">
+                  <div className="section-title"><span>{localize("Rates", lang)}</span><span>US Treasury</span></div>
+                  <div className="detail-chart-grid">
+                    {rateTrendRows.map((row) => (
+                      <article className="chart-card" key={row.label}>
+                        <div className="chart-card-head"><strong>{row.label}</strong><span>{fmt(row.value, "%")} · 5D {fmt(row.change, "%")}</span></div>
+                        <PriceTrendChart points={row.history} label={row.label} days={trendDays} lang={lang} />
+                      </article>
+                    ))}
+                  </div>
+                </section>
+                <section className="section">
+                  <div className="section-title"><span>{localize("FX", lang)}</span><span>USD crosses</span></div>
+                  <div className="detail-chart-grid">
+                    {fxTrendRows.map((row) => (
+                      <article className="chart-card" key={row.label}>
+                        <div className="chart-card-head"><strong>{row.label}</strong><span>{fmt(row.value)}</span></div>
+                        <PriceTrendChart points={row.history} label={row.label} days={trendDays} lang={lang} />
+                      </article>
+                    ))}
+                  </div>
+                </section>
               </section>
             </div>
           ) : (
@@ -1045,10 +1107,10 @@ export function MarketDashboard({ initialData }: Props) {
             <section className="section summary-section">
               <div className="section-title"><span>{localize("Market Indicators", lang)}</span><span>{localize("Market Breadth", lang)}</span></div>
               <table>
-                <thead><tr><th>{localize("Name", lang)}</th><th>AMA10</th><th>AMA30</th><th>AMA60</th><th>AMA180</th><th>Sample</th></tr></thead>
+                <thead><tr><th>{localize("Name", lang)}</th><th>AMA60</th><th>{localize("1W", lang)}</th><th>{localize("4W", lang)}</th><th>Sample</th></tr></thead>
                 <tbody>
                   {Object.entries(breadth).map(([name, item]) => (
-                    <tr key={name}><td>{name}-{localize("Market Breadth", lang)}</td><td>{fmt(item.ama10 as Scalar, "%")}</td><td>{fmt(item.ama30 as Scalar, "%")}</td><td>{fmt(item.ama60 as Scalar, "%")}</td><td>{fmt(item.ama180 as Scalar, "%")}</td><td>{fmt(item.sampleSize as Scalar)}</td></tr>
+                    <tr key={name}><td>{name}-{localize("Market Breadth", lang)}</td><td>{fmt(item.ama60 as Scalar, "%")}</td><td className={tone(item.ama60Change1w as Scalar)}>{fmt(item.ama60Change1w as Scalar, "ppt")}</td><td className={tone(item.ama60Change4w as Scalar)}>{fmt(item.ama60Change4w as Scalar, "ppt")}</td><td>{fmt(item.sampleSize as Scalar)}</td></tr>
                   ))}
                 </tbody>
               </table>

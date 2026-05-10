@@ -3,7 +3,7 @@ import { extname, join, relative } from "node:path";
 
 import config from "@/config.json";
 import { readLatestSqlOptionSnapshot } from "@/lib/option-sql";
-import type { CompleteReportItem, InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator, TimeSeriesPoint } from "@/lib/types";
+import type { BreadthIndicator, CompleteReportItem, InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator, TimeSeriesPoint } from "@/lib/types";
 
 const MISSING: Scalar = "N/A";
 const WATCHLIST = config.watchlist;
@@ -878,28 +878,51 @@ async function fetchTreasuryCurve(statuses: SourceStatus[]) {
   const latest = rows[0] ?? [];
   const previous = rows[5] ?? rows[1] ?? latest;
   const read = (row: string[], column: string) => parseNumber(row[headers.indexOf(column)]);
+  const historyFor = (column: string) => rows
+    .map((row) => {
+      const rawDate = row[headers.indexOf("Date")] ?? "";
+      const value = read(row, column);
+      return rawDate && value !== null ? { date: normalizeDate(rawDate).slice(0, 10), value: cleanNumber(value) } : null;
+    })
+    .filter((point): point is TimeSeriesPoint => Boolean(point))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-365);
   const asOf = latest[headers.indexOf("Date")] ?? "";
   statuses.push(status("treasury:yield-curve", "ok", `latest ${asOf}`));
   return {
-    US1Y: { yield: cleanNumber(read(latest, "1 Yr")), change5dPct: pctChange(read(latest, "1 Yr"), read(previous, "1 Yr")), asOf, source: "US Treasury daily yield curve" },
-    US10Y: { yield: cleanNumber(read(latest, "10 Yr")), change5dPct: pctChange(read(latest, "10 Yr"), read(previous, "10 Yr")), asOf, source: "US Treasury daily yield curve" },
-    US20Y: { yield: cleanNumber(read(latest, "20 Yr")), change5dPct: pctChange(read(latest, "20 Yr"), read(previous, "20 Yr")), asOf, source: "US Treasury daily yield curve" },
-    US30Y: { yield: cleanNumber(read(latest, "30 Yr")), change5dPct: pctChange(read(latest, "30 Yr"), read(previous, "30 Yr")), asOf, source: "US Treasury daily yield curve" },
+    US1Y: { yield: cleanNumber(read(latest, "1 Yr")), change5dPct: pctChange(read(latest, "1 Yr"), read(previous, "1 Yr")), asOf, source: "US Treasury daily yield curve", history: historyFor("1 Yr") },
+    US10Y: { yield: cleanNumber(read(latest, "10 Yr")), change5dPct: pctChange(read(latest, "10 Yr"), read(previous, "10 Yr")), asOf, source: "US Treasury daily yield curve", history: historyFor("10 Yr") },
+    US20Y: { yield: cleanNumber(read(latest, "20 Yr")), change5dPct: pctChange(read(latest, "20 Yr"), read(previous, "20 Yr")), asOf, source: "US Treasury daily yield curve", history: historyFor("20 Yr") },
+    US30Y: { yield: cleanNumber(read(latest, "30 Yr")), change5dPct: pctChange(read(latest, "30 Yr"), read(previous, "30 Yr")), asOf, source: "US Treasury daily yield curve", history: historyFor("30 Yr") },
   };
 }
 
 async function fetchFx(statuses: SourceStatus[]) {
-  const payload = await fetchJson<{ rates?: Record<string, number>; time_last_update_utc?: string }>("https://open.er-api.com/v6/latest/USD", 8000);
+  const end = new Date();
+  const start = new Date(end.getTime() - 130 * 24 * 60 * 60 * 1000);
+  const [payload, historyPayload] = await Promise.all([
+    fetchJson<{ rates?: Record<string, number>; time_last_update_utc?: string }>("https://open.er-api.com/v6/latest/USD", 8000),
+    fetchJson<{ rates?: Record<string, Record<string, number>> }>(
+      `https://api.frankfurter.app/${start.toISOString().slice(0, 10)}..${end.toISOString().slice(0, 10)}?from=USD&to=JPY,EUR,CNY`,
+      10000,
+    ),
+  ]);
   const rates = payload?.rates ?? {};
   if (!rates.CNY || !rates.JPY || !rates.EUR) {
     statuses.push(status("fx:open-er-api", "missing", "USD rates unavailable"));
     return {};
   }
+  const historyFor = (code: "CNY" | "JPY" | "EUR") => Object.entries(historyPayload?.rates ?? {})
+    .map(([date, row]) => ({ date, value: cleanNumber(row[code], 4) }))
+    .filter((point) => point.value !== MISSING)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-365);
   statuses.push(status("fx:open-er-api", "ok", payload?.time_last_update_utc ?? "latest USD rates"));
+  if (historyFor("JPY").length) statuses.push(status("fx:frankfurter-history", "ok", "USD/JPY, USD/CNY, USD/EUR history"));
   return {
-    USDCNY: { value: cleanNumber(rates.CNY, 4), change1dPct: MISSING, source: "open.er-api.com" },
-    USDJPY: { value: cleanNumber(rates.JPY, 4), change1dPct: MISSING, source: "open.er-api.com" },
-    USDEUR: { value: cleanNumber(rates.EUR, 4), change1dPct: MISSING, source: "open.er-api.com" },
+    USDCNY: { value: cleanNumber(rates.CNY, 4), change1dPct: MISSING, source: "open.er-api.com", history: historyFor("CNY") },
+    USDJPY: { value: cleanNumber(rates.JPY, 4), change1dPct: MISSING, source: "open.er-api.com", history: historyFor("JPY") },
+    USDEUR: { value: cleanNumber(rates.EUR, 4), change1dPct: MISSING, source: "open.er-api.com", history: historyFor("EUR") },
   };
 }
 
@@ -967,6 +990,7 @@ function buildFredSignal(points: FredPoint[], spec: FredSignalSpec) {
     unit: spec.unit,
     asOf: latest.date,
     source: spec.source ?? `FRED ${spec.seriesId}`,
+    history: points.slice(-365).map((point) => ({ date: point.date, value: convertFredValue(point.value, divisor, digits) })),
   };
 }
 
@@ -1089,6 +1113,16 @@ async function fetchFedLiquidity(statuses: SourceStatus[]) {
   const extraSignals = Object.fromEntries(extraSpecs.map((spec, index) => [spec.key, buildFredSignal(extraSeries[index] ?? [], spec)]));
   const sofr = extraSignals.sofr;
   const iorb = extraSignals.iorb;
+  const iorbHistory = (iorb?.history ?? []).filter((point): point is { date: string; value: number } => typeof point.value === "number");
+  const spreadHistory = (sofr?.history ?? [])
+    .map((point) => {
+      const iorbPoint = latestAtOrBefore(iorbHistory, point.date);
+      return typeof point.value === "number" && typeof iorbPoint?.value === "number"
+        ? { date: point.date, value: cleanNumber((point.value - iorbPoint.value) * 100, 1) }
+        : null;
+    })
+    .filter((point): point is TimeSeriesPoint => Boolean(point))
+    .slice(-365);
   const sofrIorb = {
     label: "SOFR-IORB 利差",
     value: typeof sofr?.value === "number" && typeof iorb?.value === "number" ? cleanNumber((sofr.value - iorb.value) * 100, 1) : MISSING,
@@ -1097,7 +1131,9 @@ async function fetchFedLiquidity(statuses: SourceStatus[]) {
     unit: "bps",
     asOf: sofr?.asOf || iorb?.asOf || "",
     source: "FRED SOFR / IORB",
+    history: spreadHistory,
   };
+  const netHistory = rows.slice(-365).map((row) => ({ date: row.asOf, value: cleanNumber(row.netLiquidity, 3) }));
   const signals = {
     netLiquidity: {
       label: "综合净流动性",
@@ -1107,6 +1143,7 @@ async function fetchFedLiquidity(statuses: SourceStatus[]) {
       unit: "T",
       asOf: latest.asOf,
       source: "FRED WALCL / WTREGEN / RRPONTSYD",
+      history: netHistory,
     },
     fedBalanceSheet: buildFredSignal(walcl, { key: "fedBalanceSheet", label: "Fed 总资产", seriesId: "WALCL", unit: "T", divisor: 1_000_000, digits: 3 }),
     tga: buildFredSignal(tga, { key: "tga", label: "TGA 余额", seriesId: "WTREGEN", unit: "T", divisor: 1_000_000, digits: 3 }),
@@ -1154,7 +1191,7 @@ function samplePeProxy(data: MarketData, symbols: string[]): Scalar {
   return cleanNumber(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
-function breadthForSample(data: MarketData, symbols: string[]) {
+function breadthForSample(data: MarketData, symbols: string[]): BreadthIndicator {
   const result: Record<string, Scalar | number> = { sampleSize: symbols.length };
   for (const window of [10, 30, 60, 180]) {
     let available = 0;
@@ -1169,7 +1206,38 @@ function breadthForSample(data: MarketData, symbols: string[]) {
     }
     result[`ama${window}`] = available ? cleanNumber((above / available) * 100, 1) : MISSING;
   }
-  return result;
+  const buckets = new Map<string, { available: number; above: number }>();
+  for (const symbol of symbols) {
+    const points = data.priceHistory[symbol]?.filter((point) => typeof point.value === "number") as Array<{ date: string; value: number }> | undefined;
+    if (!points?.length) continue;
+    for (let index = 59; index < points.length; index += 1) {
+      const point = points[index];
+      const ma60 = points.slice(index - 59, index + 1).reduce((sum, item) => sum + item.value, 0) / 60;
+      const bucket = buckets.get(point.date) ?? { available: 0, above: 0 };
+      bucket.available += 1;
+      if (point.value > ma60) bucket.above += 1;
+      buckets.set(point.date, bucket);
+    }
+  }
+  const history = [...buckets.entries()]
+    .map(([date, bucket]) => ({ date, value: bucket.available ? cleanNumber((bucket.above / bucket.available) * 100, 1) : MISSING }))
+    .filter((point) => point.value !== MISSING)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-365);
+  const numericHistory = history.map((point) => ({ date: point.date, value: point.value as number }));
+  const latest = numericHistory.at(-1);
+  const previousWeek = latest ? latestAtOrBefore(numericHistory, dateDaysBefore(latest.date, 7)) : undefined;
+  const previousMonth = latest ? latestAtOrBefore(numericHistory, dateDaysBefore(latest.date, 28)) : undefined;
+  return {
+    sampleSize: result.sampleSize as number,
+    ama10: result.ama10 ?? MISSING,
+    ama30: result.ama30 ?? MISSING,
+    ama60: result.ama60 ?? MISSING,
+    ama180: result.ama180 ?? MISSING,
+    ama60Change1w: latest && previousWeek ? cleanNumber(latest.value - previousWeek.value, 1) : MISSING,
+    ama60Change4w: latest && previousMonth ? cleanNumber(latest.value - previousMonth.value, 1) : MISSING,
+    history,
+  };
 }
 
 function buildIndexIndicator(data: MarketData, symbol: "QQQ" | "SPY") {
