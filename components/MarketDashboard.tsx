@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, Scalar } from "@/lib/types";
+import type { InfluencerMockAnalysisItem, MacroSignal, MarketSnapshot, NewsItem, Scalar, TimeSeriesPoint } from "@/lib/types";
 
 type Props = {
   initialData: MarketSnapshot;
@@ -20,6 +20,7 @@ type OptionHistory = {
   availableMetrics: string[];
   symbols: Record<string, OptionHistoryPoint[]>;
 };
+type DetailView = "macro" | "stocks" | null;
 
 const OPTION_AXIS_DAYS = 90;
 
@@ -46,6 +47,7 @@ const EMPTY_INDEX = {
   option: EMPTY_OPTION,
   source: "unavailable",
   timestamp: "",
+  history: [],
 };
 const EMPTY_VALUE = { value: NA, change1dPct: NA, source: "unavailable" };
 const EMPTY_YIELD = { yield: NA, change5dPct: NA, asOf: "", source: "unavailable" };
@@ -59,6 +61,7 @@ const EMPTY_LIQUIDITY = {
   asOf: "",
   source: "unavailable",
   formula: "WALCL - WTREGEN - RRPONTSYD",
+  signals: {},
 };
 
 const UI_ZH: Record<string, string> = {
@@ -87,6 +90,7 @@ const UI_ZH: Record<string, string> = {
   "Sample AMA": "样本 AMA",
   "Measure": "指标",
   "Value": "数值",
+  "Source": "来源",
   "Change": "变化",
   "Name": "名称",
   "Asset": "资产",
@@ -133,6 +137,19 @@ const UI_ZH: Record<string, string> = {
   "Risk-off": "风险规避",
   "Neutral": "中性",
   "Macro / Fed": "宏观 / 美联储",
+  "Detail": "详细",
+  "Back to cockpit": "返回驾驶舱",
+  "Recently": "最近",
+  "Trend": "趋势",
+  "days": "天",
+  "Market Indicators": "市场指标",
+  "Rates": "利率",
+  "FX": "汇率",
+  "Fed Liquidity Detail": "美联储流动性明细",
+  "Current": "当前",
+  "1W": "1周",
+  "4W": "4周",
+  "No trend data.": "暂无趋势数据。",
   "Geopolitics": "地缘政治",
   "Equity Tape": "股市盘面",
   "Single Stocks": "个股",
@@ -675,6 +692,63 @@ function OptionLineChart({ points, metric, days }: { points: OptionHistoryPoint[
   );
 }
 
+function PriceTrendChart({ points, label, days, lang }: { points: TimeSeriesPoint[]; label: string; days: number; lang: Lang }) {
+  const numericPoints = points
+    .map((point) => ({ date: point.date, value: numericValue(point.value) }))
+    .filter((point): point is { date: string; value: number } => point.value !== null)
+    .slice(-days);
+
+  if (!numericPoints.length) return <div className="empty chart-empty">{localize("No trend data.", lang)}</div>;
+
+  const width = 860;
+  const height = 260;
+  const padX = 50;
+  const padY = 26;
+  const values = numericPoints.map((point) => point.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || Math.max(Math.abs(max), 1);
+  const xFor = (index: number) => padX + (index / Math.max(numericPoints.length - 1, 1)) * (width - padX * 2);
+  const yFor = (value: number) => height - padY - ((value - min) / span) * (height - padY * 2);
+  const line = numericPoints.length === 1
+    ? (() => {
+      const y = yFor(numericPoints[0].value);
+      return `M ${padX} ${y.toFixed(2)} L ${padX + 18} ${y.toFixed(2)}`;
+    })()
+    : numericPoints.map((point, index) => `${index ? "L" : "M"} ${xFor(index).toFixed(2)} ${yFor(point.value).toFixed(2)}`).join(" ");
+  const tickIndexes = [...new Set([0, Math.floor((numericPoints.length - 1) / 3), Math.floor(((numericPoints.length - 1) * 2) / 3), numericPoints.length - 1])];
+  const first = numericPoints[0];
+  const last = numericPoints.at(-1) ?? first;
+
+  return (
+    <div className="chart-wrap trend-chart-wrap">
+      <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${label} latest ${days} days trend`}>
+        <line x1={padX} x2={width - padX} y1={height - padY} y2={height - padY} />
+        <line x1={padX} x2={padX} y1={padY} y2={height - padY} />
+        {tickIndexes.map((index) => (
+          <g key={`${numericPoints[index].date}-${index}`}>
+            <line className="tick-line" x1={xFor(index)} x2={xFor(index)} y1={padY} y2={height - padY} />
+            <text x={xFor(index)} y={height - 6} textAnchor="middle">{numericPoints[index].date.slice(5)}</text>
+          </g>
+        ))}
+        <text x={padX - 8} y={padY + 4} textAnchor="end">{fmt(max)}</text>
+        <text x={padX - 8} y={height - padY} textAnchor="end">{fmt(min)}</text>
+        <path d={line} />
+        {numericPoints.map((point, index) => (
+          <circle key={`${point.date}-${point.value}-${index}`} cx={xFor(index)} cy={yFor(point.value)} r={3.8}>
+            <title>{point.date}: {fmt(point.value)}</title>
+          </circle>
+        ))}
+      </svg>
+      <div className="chart-stats">
+        <span>{first.date}: {fmt(first.value)}</span>
+        <strong>{label}</strong>
+        <span>{last.date}: {fmt(last.value)}</span>
+      </div>
+    </div>
+  );
+}
+
 export function MarketDashboard({ initialData }: Props) {
   const [data, setData] = useState(initialData);
   const [activeTicker, setActiveTicker] = useState(initialData.meta?.watchlist?.[0] ?? "AAPL");
@@ -685,6 +759,10 @@ export function MarketDashboard({ initialData }: Props) {
   const [isOptionHistoryLoading, setIsOptionHistoryLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lang, setLang] = useState<Lang>("zh");
+  const [detailView, setDetailView] = useState<DetailView>(null);
+  const [trendDays, setTrendDays] = useState(90);
+  const [activeMacroDetail, setActiveMacroDetail] = useState("SPY");
+  const [activeStockDetail, setActiveStockDetail] = useState(initialData.meta?.watchlist?.[0] ?? "AAPL");
   const didInitialRefresh = useRef(false);
   const stockRows = useMemo(() => Object.entries(data.stockIndicators ?? {}), [data.stockIndicators]);
   const watchlist = data.meta?.watchlist ?? [];
@@ -743,9 +821,32 @@ export function MarketDashboard({ initialData }: Props) {
   const breadth = data.macroIndicators?.breadth ?? {};
   const qqq = indices.QQQ ?? EMPTY_INDEX;
   const spy = indices.SPY ?? EMPTY_INDEX;
+  const gold = indices.GOLD ?? EMPTY_INDEX;
   const vix = volatility.VIX ?? EMPTY_VALUE;
   const liquidity = data.macroIndicators?.liquidity ?? EMPTY_LIQUIDITY;
   const usdjpy = fx.USDJPY ?? EMPTY_VALUE;
+  const usdcny = fx.USDCNY ?? EMPTY_VALUE;
+  const usdeur = fx.USDEUR ?? EMPTY_VALUE;
+  const macroAssetRows = [
+    { symbol: "QQQ", item: qqq, kind: "asset" },
+    { symbol: "SPY", item: spy, kind: "asset" },
+    { symbol: "GOLD", item: gold, kind: "asset" },
+    { symbol: "VIX", item: { ...EMPTY_INDEX, price: vix.value, change1dPct: vix.change1dPct, source: vix.source, history: (vix as { history?: TimeSeriesPoint[] }).history ?? [] }, kind: "vol" },
+  ];
+  const liquiditySignals = liquidity.signals ?? {};
+  const liquidityRows = [
+    liquiditySignals.netLiquidity,
+    liquiditySignals.fedBalanceSheet,
+    liquiditySignals.tga,
+    liquiditySignals.rrp,
+    liquiditySignals.sofrIorb,
+    liquiditySignals.dxy,
+    liquiditySignals.tips10y,
+    liquiditySignals.hyOas,
+    liquiditySignals.m2,
+  ].filter((row): row is MacroSignal => Boolean(row));
+  const detailMacroItem = macroAssetRows.find((row) => row.symbol === activeMacroDetail)?.item ?? spy;
+  const detailStockItem = data.stockIndicators?.[activeStockDetail] ?? stockRows[0]?.[1];
   const influencerMockAnalysis = data.influencerMockAnalysis ?? {
     asOf: "",
     source: "unavailable",
@@ -801,6 +902,87 @@ export function MarketDashboard({ initialData }: Props) {
         </div>
       </header>
 
+      {detailView ? (
+        <section className="detail-page">
+          <header className="detail-header">
+            <button className="detail-button" type="button" onClick={() => setDetailView(null)}>{localize("Back to cockpit", lang)}</button>
+            <div>
+              <h2>{localize(detailView === "macro" ? "宏观指标" : "个股指标", lang)}</h2>
+              <span className="stamp">{localize("Recently", lang)} {trendDays} {localize("days", lang)} · {localize("Trend", lang)}</span>
+            </div>
+            <div className="detail-range" aria-label="Trend range">
+              {[30, 90, 180, 365].map((days) => (
+                <button className={trendDays === days ? "active" : ""} key={days} onClick={() => setTrendDays(days)} type="button">{days}D</button>
+              ))}
+            </div>
+          </header>
+
+          {detailView === "macro" ? (
+            <div className="detail-grid">
+              <aside className="detail-sidebar">
+                {macroAssetRows.map(({ symbol, item }) => (
+                  <button className={activeMacroDetail === symbol ? "active" : ""} key={symbol} onClick={() => setActiveMacroDetail(symbol)} type="button">
+                    <strong>{symbol}</strong>
+                    <span>{fmt(item.price)} · {fmt(item.change1dPct, "%")}</span>
+                  </button>
+                ))}
+              </aside>
+              <section className="detail-main">
+                <div className="detail-kpis">
+                  <Metric label={activeMacroDetail} value={detailMacroItem.price} detail={`${fmt(detailMacroItem.change1dPct, "%")} 1D`} lang={lang} />
+                  <Metric label="PE" value={detailMacroItem.pe} detail={detailMacroItem.peSource} lang={lang} />
+                  <Metric label="MA60" value={detailMacroItem.ma60} detail={`MA180 ${fmt(detailMacroItem.ma180)}`} lang={lang} />
+                  <Metric label="Option MaxPain" value={detailMacroItem.option.maxPain} detail={`IV ${fmt(detailMacroItem.option.iv, "%")}`} lang={lang} />
+                </div>
+                <PriceTrendChart points={detailMacroItem.history ?? []} label={activeMacroDetail} days={trendDays} lang={lang} />
+                <section className="section">
+                  <div className="section-title"><span>{localize("Fed Liquidity Detail", lang)}</span><span>{liquidity.asOf || "FRED"}</span></div>
+                  <table>
+                    <thead><tr><th>{localize("Measure", lang)}</th><th>{localize("Current", lang)}</th><th>{localize("1W", lang)}</th><th>{localize("4W", lang)}</th><th>{localize("Source", lang)}</th></tr></thead>
+                    <tbody>
+                      {liquidityRows.map((row) => (
+                        <tr key={row.label}><td>{localize(row.label, lang)}</td><td>{fmt(row.value, row.unit)}</td><td className={tone(row.change1w)}>{fmt(row.change1w, row.unit)}</td><td className={tone(row.change4w)}>{fmt(row.change4w, row.unit)}</td><td>{row.source}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </section>
+              </section>
+            </div>
+          ) : (
+            <div className="detail-grid">
+              <aside className="detail-sidebar">
+                {stockRows.map(([ticker, item]) => (
+                  <button className={activeStockDetail === ticker ? "active" : ""} key={ticker} onClick={() => setActiveStockDetail(ticker)} type="button">
+                    <strong>{ticker}</strong>
+                    <span>{fmt(item.price)} · {fmt(item.change1dPct, "%")}</span>
+                  </button>
+                ))}
+              </aside>
+              <section className="detail-main">
+                {detailStockItem ? (
+                  <>
+                    <div className="detail-kpis">
+                      <Metric label={activeStockDetail} value={detailStockItem.price} detail={`${fmt(detailStockItem.change1dPct, "%")} 1D`} lang={lang} />
+                      <Metric label="PE" value={detailStockItem.pe} detail={`EPS ${fmt(detailStockItem.epsTtm)}`} lang={lang} />
+                      <Metric label="MA60" value={detailStockItem.ma60} detail={`MA180 ${fmt(detailStockItem.ma180)}`} lang={lang} />
+                      <Metric label="Option MaxPain" value={detailStockItem.option.maxPain} detail={`IV ${fmt(detailStockItem.option.iv, "%")}`} lang={lang} />
+                    </div>
+                    <PriceTrendChart points={detailStockItem.history ?? []} label={activeStockDetail} days={trendDays} lang={lang} />
+                    <section className="section">
+                      <div className="section-title"><span>{localize("Option Structure", lang)}</span><span>{detailStockItem.option.expiration || detailStockItem.option.source}</span></div>
+                      <table>
+                        <thead><tr><th>{localize("Max Pain", lang)}</th><th>IV</th><th>Call OI</th><th>Put OI</th><th>P/C OI</th><th>{localize("1x ATR Stop", lang)}</th></tr></thead>
+                        <tbody><tr><td>{fmt(detailStockItem.option.maxPain)}</td><td>{fmt(detailStockItem.option.iv, "%")}</td><td>{fmt(detailStockItem.option.callOpenInterest)}</td><td>{fmt(detailStockItem.option.putOpenInterest)}</td><td>{fmt(detailStockItem.option.putCallOiRatio)}</td><td>{fmt(subtractScalar(detailStockItem.price, detailStockItem.atr14))}</td></tr></tbody>
+                      </table>
+                    </section>
+                  </>
+                ) : <div className="empty">{localize("No items in this snapshot.", lang)}</div>}
+              </section>
+            </div>
+          )}
+        </section>
+      ) : (
+      <>
       <section className="dashboard">
         <article className="panel">
           <header className="panel-head">
@@ -830,79 +1012,83 @@ export function MarketDashboard({ initialData }: Props) {
         <article className="panel">
           <header className="panel-head">
             <div className="panel-title"><span className="dot" /><strong>{localize("宏观指标", lang)}</strong></div>
-            <div className="panel-actions">{localize("Dynamic API", lang)}</div>
+            <div className="panel-actions">
+              <span>{localize("Dynamic API", lang)}</span>
+              <button className="detail-button" type="button" onClick={() => setDetailView("macro")}>{localize("Detail", lang)}</button>
+            </div>
           </header>
           <div className="scroll panel-scroll" tabIndex={0} aria-label="Macro indicators panel body">
-            <div className="metrics">
-              <Metric label="SPY" value={spy.price} detail={`${fmt(spy.change1dPct, "%")} 1D`} lang={lang} />
-              <Metric label="QQQ" value={qqq.price} detail={`${fmt(qqq.change1dPct, "%")} 1D`} lang={lang} />
-              <Metric label="VIX" value={vix.value} detail={`${fmt(vix.change1dPct, "%")} 1D`} lang={lang} />
-              <Metric label="Fed Liquidity" value={liquidity.netLiquidity} detail={`${fmt(liquidity.netLiquidityChange4w, "T")} 4W`} lang={lang} />
-              <Metric label="USD/JPY" value={usdjpy.value} detail={usdjpy.source} lang={lang} />
-            </div>
-            <div className="subgrid">
+            <section className="section summary-section">
+              <div className="section-title"><span>{localize("ETF Valuation / Trend", lang)}</span><span>QQQ · SPY · GOLD · VIX</span></div>
+              <table className="wide-table">
+                <thead><tr><th>{localize("Ticker", lang)}</th><th>{localize("Price", lang)}</th><th>1D</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>ATR</th><th>{localize("1x ATR Stop", lang)}</th><th>{localize("Option MaxPain", lang)}</th><th>IV</th></tr></thead>
+                <tbody>
+                  {macroAssetRows.map(({ symbol, item }) => (
+                    <tr key={symbol}>
+                      <td title={item.source}>{symbol}</td>
+                      <td>{fmt(item.price)}</td>
+                      <td className={tone(item.change1dPct)}>{fmt(item.change1dPct, "%")}</td>
+                      <td title={item.peSource}>{fmt(item.pe)}</td>
+                      <td>{fmt(item.ma10)}</td>
+                      <td>{fmt(item.ma30)}</td>
+                      <td>{fmt(item.ma60)}</td>
+                      <td>{fmt(item.ma180)}</td>
+                      <td>{fmt(item.atr14)}</td>
+                      <td>{fmt(subtractScalar(item.price, item.atr14))}</td>
+                      <td>{fmt(item.option.maxPain)}</td>
+                      <td>{fmt(item.option.iv, "%")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+            <section className="section summary-section">
+              <div className="section-title"><span>{localize("Market Indicators", lang)}</span><span>{localize("Market Breadth", lang)}</span></div>
+              <table>
+                <thead><tr><th>{localize("Name", lang)}</th><th>AMA10</th><th>AMA30</th><th>AMA60</th><th>AMA180</th><th>Sample</th></tr></thead>
+                <tbody>
+                  {Object.entries(breadth).map(([name, item]) => (
+                    <tr key={name}><td>{name}-{localize("Market Breadth", lang)}</td><td>{fmt(item.ama10 as Scalar, "%")}</td><td>{fmt(item.ama30 as Scalar, "%")}</td><td>{fmt(item.ama60 as Scalar, "%")}</td><td>{fmt(item.ama180 as Scalar, "%")}</td><td>{fmt(item.sampleSize as Scalar)}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+            <section className="section summary-section">
+              <div className="section-title"><span>{localize("Fed Liquidity", lang)}</span><span>{liquidity.asOf || "FRED"}</span></div>
+              <table>
+                <thead><tr><th>{localize("Measure", lang)}</th><th>{localize("Current", lang)}</th><th>{localize("1W", lang)}</th><th>{localize("4W", lang)}</th></tr></thead>
+                <tbody>
+                  {(liquidityRows.length ? liquidityRows : [{ label: "Net Liquidity", value: liquidity.netLiquidity, change1w: liquidity.netLiquidityChange1w, change4w: liquidity.netLiquidityChange4w, unit: "T", source: liquidity.source }]).map((row) => (
+                    <tr key={row.label}><td title={row.source}>{localize(row.label, lang)}</td><td>{fmt(row.value, row.unit)}</td><td className={tone(row.change1w)}>{fmt(row.change1w, row.unit)}</td><td className={tone(row.change4w)}>{fmt(row.change4w, row.unit)}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+            <div className="summary-row">
               <section className="section">
-                <div className="section-title"><span>{localize("Fed Liquidity", lang)}</span><span>{liquidity.asOf || "FRED"}</span></div>
+                <div className="section-title"><span>{localize("Rates", lang)}</span><span>US Treasury</span></div>
                 <table>
-                  <thead><tr><th>{localize("Measure", lang)}</th><th>{localize("Value", lang)}</th><th>1W</th><th>4W</th></tr></thead>
-                  <tbody>
-                    <tr><td title={liquidity.formula}>{localize("Net Liquidity", lang)}</td><td>{fmt(liquidity.netLiquidity, "T")}</td><td className={tone(liquidity.netLiquidityChange1w)}>{fmt(liquidity.netLiquidityChange1w, "T")}</td><td className={tone(liquidity.netLiquidityChange4w)}>{fmt(liquidity.netLiquidityChange4w, "T")}</td></tr>
-                    <tr><td title="WALCL">{localize("Fed Balance Sheet", lang)}</td><td>{fmt(liquidity.fedBalanceSheet, "T")}</td><td colSpan={2} /></tr>
-                    <tr><td title="WTREGEN">{localize("Treasury General Account", lang)}</td><td>{fmt(liquidity.tga, "T")}</td><td colSpan={2} /></tr>
-                    <tr><td title="RRPONTSYD">{localize("Reverse Repo", lang)}</td><td>{fmt(liquidity.rrp, "T")}</td><td colSpan={2}>{localize(liquidity.source, lang)}</td></tr>
-                  </tbody>
-                </table>
-              </section>
-              <section className="section">
-                <div className="section-title"><span>{localize("ETF Valuation / Trend", lang)}</span><span>MA</span></div>
-                <table>
-                  <thead><tr><th>{localize("Name", lang)}</th><th>PE</th><th>MA10</th><th>MA30</th><th>MA60</th><th>MA180</th><th>ATR</th></tr></thead>
-                  <tbody>
-                    {Object.entries(indices).map(([name, item]) => (
-                      <tr key={name}><td title={item.peSource}>{name}</td><td>{fmt(item.pe)}</td><td>{fmt(item.ma10)}</td><td>{fmt(item.ma30)}</td><td>{fmt(item.ma60)}</td><td>{fmt(item.ma180)}</td><td>{fmt(item.atr14)}</td></tr>
-                    ))}
-                  </tbody>
-                </table>
-              </section>
-              <section className="section">
-                <div className="section-title"><span>{localize("Vol / FX / Bonds", lang)}</span><span>{localize("Cross Asset", lang)}</span></div>
-                <table>
-                  <thead><tr><th>{localize("Asset", lang)}</th><th>{localize("Value", lang)}</th><th>{localize("Change", lang)}</th></tr></thead>
+                  <thead><tr><th>{localize("Asset", lang)}</th><th>{localize("Value", lang)}</th><th>5D</th></tr></thead>
                   <tbody>
                     {[
-                      ["QQQ VIX", volatility.QQQ_VIX_PROXY?.value, volatility.QQQ_VIX_PROXY?.change1dPct],
-                      ["SPY VIX", volatility.SPY_VIX_PROXY?.value, volatility.SPY_VIX_PROXY?.change1dPct],
-                      ["USD/CNY", fx.USDCNY?.value, fx.USDCNY?.change1dPct],
-                      ["USD/JPY", fx.USDJPY?.value, fx.USDJPY?.change1dPct],
                       ["US 1Y", (bonds.US1Y ?? EMPTY_YIELD).yield, (bonds.US1Y ?? EMPTY_YIELD).change5dPct],
                       ["US 10Y", (bonds.US10Y ?? EMPTY_YIELD).yield, (bonds.US10Y ?? EMPTY_YIELD).change5dPct],
                       ["US 20Y", (bonds.US20Y ?? EMPTY_YIELD).yield, (bonds.US20Y ?? EMPTY_YIELD).change5dPct],
                       ["US 30Y", (bonds.US30Y ?? EMPTY_YIELD).yield, (bonds.US30Y ?? EMPTY_YIELD).change5dPct],
                     ].map(([name, value, change]) => (
-                      <tr key={name as string}><td>{name}</td><td>{fmt(value as Scalar)}</td><td className={tone(change as Scalar)}>{fmt(change as Scalar, "%")}</td></tr>
+                      <tr key={name as string}><td>{name}</td><td>{fmt(value as Scalar, "%")}</td><td className={tone(change as Scalar)}>{fmt(change as Scalar, "%")}</td></tr>
                     ))}
                   </tbody>
                 </table>
               </section>
               <section className="section">
-                <div className="section-title"><span>{localize("Option Structure", lang)}</span><span>Nasdaq</span></div>
+                <div className="section-title"><span>{localize("FX", lang)}</span><span>USD crosses</span></div>
                 <table>
-                  <thead><tr><th>{localize("Name", lang)}</th><th>{localize("Max Pain", lang)}</th><th>IV</th><th>P/C OI</th><th>{localize("Expiry", lang)}</th></tr></thead>
+                  <thead><tr><th>{localize("Asset", lang)}</th><th>{localize("Value", lang)}</th><th>{localize("Source", lang)}</th></tr></thead>
                   <tbody>
-                    {Object.entries(indices).map(([name, item]) => (
-                      <tr key={name}><td>{name}</td><td>{fmt(item.option.maxPain)}</td><td>{fmt(item.option.iv, "%")}</td><td>{fmt(item.option.putCallOiRatio)}</td><td>{item.option.expiration}</td></tr>
-                    ))}
-                  </tbody>
-                </table>
-              </section>
-              <section className="section">
-                <div className="section-title"><span>{localize("Market Breadth", lang)}</span><span>{localize("Sample AMA", lang)}</span></div>
-                <table>
-                  <thead><tr><th>{localize("Name", lang)}</th><th>AMA10</th><th>AMA30</th><th>AMA60</th><th>AMA180</th></tr></thead>
-                  <tbody>
-                    {Object.entries(breadth).map(([name, item]) => (
-                      <tr key={name}><td>{name}</td><td>{fmt(item.ama10 as Scalar, "%")}</td><td>{fmt(item.ama30 as Scalar, "%")}</td><td>{fmt(item.ama60 as Scalar, "%")}</td><td>{fmt(item.ama180 as Scalar, "%")}</td></tr>
-                    ))}
+                    <tr><td>USD/JPY</td><td>{fmt(usdjpy.value)}</td><td>{localize(usdjpy.source, lang)}</td></tr>
+                    <tr><td>USD/CNY</td><td>{fmt(usdcny.value)}</td><td>{localize(usdcny.source, lang)}</td></tr>
+                    <tr><td>USD/EUR</td><td>{fmt(usdeur.value)}</td><td>{localize(usdeur.source, lang)}</td></tr>
                   </tbody>
                 </table>
               </section>
@@ -913,7 +1099,10 @@ export function MarketDashboard({ initialData }: Props) {
         <article className="panel">
           <header className="panel-head">
             <div className="panel-title"><span className="dot" /><strong>{localize("个股指标", lang)}</strong></div>
-            <div className="panel-actions">{localize("M7 configurable", lang)}</div>
+            <div className="panel-actions">
+              <span>{localize("M7 configurable", lang)}</span>
+              <button className="detail-button" type="button" onClick={() => setDetailView("stocks")}>{localize("Detail", lang)}</button>
+            </div>
           </header>
           <div className="scroll panel-scroll" tabIndex={0} aria-label="Stock indicators panel body">
             <table>
@@ -1091,6 +1280,8 @@ export function MarketDashboard({ initialData }: Props) {
           <div className="empty">{localize("No influencer analysis available in this runtime.", lang)}</div>
         )}
       </section>
+      </>
+      )}
     </main>
   );
 }

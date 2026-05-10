@@ -3,11 +3,11 @@ import { extname, join, relative } from "node:path";
 
 import config from "@/config.json";
 import { readLatestSqlOptionSnapshot } from "@/lib/option-sql";
-import type { CompleteReportItem, InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator } from "@/lib/types";
+import type { CompleteReportItem, InfluencerMockAnalysisItem, MarketSnapshot, NewsItem, OptionSummary, Scalar, SourceStatus, StockIndicator, TimeSeriesPoint } from "@/lib/types";
 
 const MISSING: Scalar = "N/A";
 const WATCHLIST = config.watchlist;
-const ETF_SYMBOLS = ["QQQ", "SPY"] as const;
+const ETF_SYMBOLS = ["QQQ", "SPY", "GLD"] as const;
 const REFRESH_SECONDS = 300;
 const INFLUENCER_PRIORITY = [
   "Corsica267",
@@ -42,6 +42,7 @@ type Quote = {
 type MarketData = {
   quotes: Record<string, Quote>;
   history: Record<string, Series>;
+  priceHistory: Record<string, TimeSeriesPoint[]>;
   epsTtm: Record<string, number>;
   options: Record<string, OptionSummary>;
 };
@@ -66,6 +67,16 @@ type LiquidityRow = {
   fedBalanceSheet: number;
   tga: number;
   rrp: number;
+};
+
+type FredSignalSpec = {
+  key: string;
+  label: string;
+  seriesId: string;
+  unit: string;
+  divisor?: number;
+  digits?: number;
+  source?: string;
 };
 
 function status(name: string, statusValue: SourceStatus["status"], detail: string): SourceStatus {
@@ -716,7 +727,7 @@ async function fetchNasdaqQuote(symbol: string): Promise<Quote> {
   };
 }
 
-async function fetchNasdaqHistory(symbol: string, days = 430): Promise<Series> {
+async function fetchNasdaqHistory(symbol: string, days = 430): Promise<TimeSeriesPoint[]> {
   const assetClass = assetClassFor(symbol);
   const end = new Date();
   const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
@@ -731,7 +742,7 @@ async function fetchNasdaqHistory(symbol: string, days = 430): Promise<Series> {
     .map((row) => ({ date: Date.parse(row.date ?? ""), close: parseNumber(row.close) }))
     .filter((row): row is { date: number; close: number } => Number.isFinite(row.date) && row.close !== null)
     .sort((a, b) => a.date - b.date)
-    .map((row) => row.close);
+    .map((row) => ({ date: new Date(row.date).toISOString().slice(0, 10), value: cleanNumber(row.close, 4) }));
 }
 
 async function fetchNasdaqEpsTtm(symbol: string): Promise<Scalar> {
@@ -801,7 +812,7 @@ function estimateMaxPain(rows: Array<{ strike: number; callOi: number; putOi: nu
 
 async function collectNasdaqData(symbols: string[], optionSymbols: string[], statuses: SourceStatus[]): Promise<MarketData> {
   const uniqueSymbols = [...new Set(symbols)];
-  const data: MarketData = { quotes: {}, history: {}, epsTtm: {}, options: {} };
+  const data: MarketData = { quotes: {}, history: {}, priceHistory: {}, epsTtm: {}, options: {} };
 
   const quotes = await Promise.all(uniqueSymbols.map(fetchNasdaqQuote));
   for (const quote of quotes) {
@@ -809,8 +820,11 @@ async function collectNasdaqData(symbols: string[], optionSymbols: string[], sta
   }
 
   const histories = await Promise.all(uniqueSymbols.map(async (symbol) => [symbol, await fetchNasdaqHistory(symbol)] as const));
-  for (const [symbol, series] of histories) {
-    if (series.length) data.history[symbol] = series;
+  for (const [symbol, points] of histories) {
+    if (points.length) {
+      data.priceHistory[symbol] = points;
+      data.history[symbol] = points.map((point) => point.value).filter((value): value is number => typeof value === "number");
+    }
   }
 
   const eps = await Promise.all(uniqueSymbols.filter((symbol) => assetClassFor(symbol) === "stocks").map(async (symbol) => [symbol, await fetchNasdaqEpsTtm(symbol)] as const));
@@ -833,16 +847,21 @@ async function collectNasdaqData(symbols: string[], optionSymbols: string[], sta
 async function fetchCboeIndex(symbol: "VIX" | "VXN", statuses: SourceStatus[]) {
   const csv = await fetchText(`https://cdn.cboe.com/api/global/us_indices/daily_prices/${symbol}_History.csv`, 12000);
   const rows = csv.split(/\r?\n/).slice(1).map((line) => line.split(",")).filter((cols) => cols.length >= 5);
-  const closes = rows.map((cols) => parseNumber(cols[4])).filter((value): value is number => value !== null);
+  const history = rows
+    .map((cols) => ({ date: cols[0] ?? "", value: parseNumber(cols[4]) }))
+    .filter((point): point is { date: string; value: number } => Boolean(point.date) && point.value !== null)
+    .map((point) => ({ date: normalizeDate(point.date).slice(0, 10), value: cleanNumber(point.value) }));
+  const closes = history.map((point) => point.value).filter((value): value is number => typeof value === "number");
   if (closes.length < 2) {
     statuses.push(status(`cboe:${symbol.toLowerCase()}`, "missing", `${symbol} history unavailable`));
-    return { value: MISSING, change1dPct: MISSING, source: `Cboe ${symbol} history` };
+    return { value: MISSING, change1dPct: MISSING, source: `Cboe ${symbol} history`, history: [] };
   }
   statuses.push(status(`cboe:${symbol.toLowerCase()}`, "ok", `latest close from Cboe CSV`));
   return {
     value: cleanNumber(closes.at(-1)),
     change1dPct: pctChange(closes.at(-1), closes.at(-2)),
     source: `Cboe ${symbol} history`,
+    history: history.slice(-365),
   };
 }
 
@@ -872,7 +891,7 @@ async function fetchTreasuryCurve(statuses: SourceStatus[]) {
 async function fetchFx(statuses: SourceStatus[]) {
   const payload = await fetchJson<{ rates?: Record<string, number>; time_last_update_utc?: string }>("https://open.er-api.com/v6/latest/USD", 8000);
   const rates = payload?.rates ?? {};
-  if (!rates.CNY || !rates.JPY) {
+  if (!rates.CNY || !rates.JPY || !rates.EUR) {
     statuses.push(status("fx:open-er-api", "missing", "USD rates unavailable"));
     return {};
   }
@@ -880,6 +899,7 @@ async function fetchFx(statuses: SourceStatus[]) {
   return {
     USDCNY: { value: cleanNumber(rates.CNY, 4), change1dPct: MISSING, source: "open.er-api.com" },
     USDJPY: { value: cleanNumber(rates.JPY, 4), change1dPct: MISSING, source: "open.er-api.com" },
+    USDEUR: { value: cleanNumber(rates.EUR, 4), change1dPct: MISSING, source: "open.er-api.com" },
   };
 }
 
@@ -907,6 +927,96 @@ function latestAtOrBefore(points: FredPoint[], date: string) {
     if (point && point.date <= date) return point;
   }
   return undefined;
+}
+
+function dateDaysBefore(date: string, days: number) {
+  const time = Date.parse(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(time)) return "";
+  return new Date(time - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function convertFredValue(value: number, divisor = 1, digits = 2): Scalar {
+  return cleanNumber(value / divisor, digits);
+}
+
+function buildFredSignal(points: FredPoint[], spec: FredSignalSpec) {
+  const latest = points.at(-1);
+  if (!latest) {
+    return {
+      label: spec.label,
+      value: MISSING,
+      change1w: MISSING,
+      change4w: MISSING,
+      unit: spec.unit,
+      asOf: "",
+      source: spec.source ?? `FRED ${spec.seriesId}`,
+    };
+  }
+  const divisor = spec.divisor ?? 1;
+  const digits = spec.digits ?? 2;
+  const current = convertFredValue(latest.value, divisor, digits);
+  const previousWeek = latestAtOrBefore(points, dateDaysBefore(latest.date, 7));
+  const previousMonth = latestAtOrBefore(points, dateDaysBefore(latest.date, 28));
+  const previousWeekValue = previousWeek ? convertFredValue(previousWeek.value, divisor, digits) : MISSING;
+  const previousMonthValue = previousMonth ? convertFredValue(previousMonth.value, divisor, digits) : MISSING;
+  return {
+    label: spec.label,
+    value: current,
+    change1w: typeof current === "number" && typeof previousWeekValue === "number" ? cleanNumber(current - previousWeekValue, digits) : MISSING,
+    change4w: typeof current === "number" && typeof previousMonthValue === "number" ? cleanNumber(current - previousMonthValue, digits) : MISSING,
+    unit: spec.unit,
+    asOf: latest.date,
+    source: spec.source ?? `FRED ${spec.seriesId}`,
+  };
+}
+
+async function fetchDollarLiquiditySeries(id: string): Promise<FredPoint[]> {
+  const payload = await fetchJson<{ data?: Array<{ date?: string; value?: number }> }>(
+    `https://dollarliquidity.com/api/series/${id}?days=90`,
+    10000,
+  );
+  return (payload?.data ?? [])
+    .map((point) => (point.date && typeof point.value === "number" ? { date: point.date, value: point.value } : null))
+    .filter((point): point is FredPoint => Boolean(point));
+}
+
+function buildDollarLiquiditySignal(points: FredPoint[], label: string, unit: string, source: string, digits = 2) {
+  return buildFredSignal(points, { key: label, label, seriesId: source, unit, digits, source });
+}
+
+async function fetchDollarLiquidityFallback() {
+  const seriesIds = {
+    netLiquidity: ["net-liquidity", "综合净流动性", "T", 3],
+    fedBalanceSheet: ["fed-balance-sheet", "Fed 总资产", "T", 3],
+    tga: ["tga", "TGA 余额", "B", 1],
+    rrp: ["onrrp", "ONRRP 余额", "B", 1],
+    sofrIorb: ["sofr-iorb", "SOFR-IORB 利差", "bps", 1],
+    dxy: ["dollar-index", "美元指数 Broad USD", "idx", 2],
+    tips10y: ["real-yield-10y", "10Y 实际利率 TIPS", "%", 2],
+    hyOas: ["hy-spread", "高收益债利差", "bps", 1],
+    m2: ["m2", "M2 货币供应量", "T", 3],
+  } as const;
+  const entries = await Promise.all(Object.entries(seriesIds).map(async ([key, [id, label, unit, digits]]) => {
+    const points = await fetchDollarLiquiditySeries(id);
+    return [key, buildDollarLiquiditySignal(points, label, unit, `DollarLiquidity ${id}`, digits)] as const;
+  }));
+  const signals = Object.fromEntries(entries);
+  const net = signals.netLiquidity;
+  const fed = signals.fedBalanceSheet;
+  const tga = signals.tga;
+  const rrp = signals.rrp;
+  return {
+    netLiquidity: net.value,
+    netLiquidityChange1w: net.change1w,
+    netLiquidityChange4w: net.change4w,
+    fedBalanceSheet: fed.value,
+    tga: tga.value,
+    rrp: rrp.value,
+    asOf: net.asOf || fed.asOf || "",
+    source: "DollarLiquidity API fallback",
+    formula: "DollarLiquidity composite net liquidity; FRED direct pull unavailable",
+    signals,
+  };
 }
 
 function toFedLiquidityRow(walcl: FredPoint, tgaPoints: FredPoint[], rrpPoints: FredPoint[]): LiquidityRow | null {
@@ -937,14 +1047,24 @@ function emptyLiquidity(source = "FRED unavailable") {
     asOf: "",
     source,
     formula: "WALCL - WTREGEN - RRPONTSYD",
+    signals: {},
   };
 }
 
 async function fetchFedLiquidity(statuses: SourceStatus[]) {
-  const [walcl, tga, rrp] = await Promise.all([
+  const extraSpecs: FredSignalSpec[] = [
+    { key: "dxy", label: "美元指数 Broad USD", seriesId: "DTWEXBGS", unit: "idx", digits: 2 },
+    { key: "hyOas", label: "高收益债利差", seriesId: "BAMLH0A0HYM2", unit: "%", digits: 2 },
+    { key: "tips10y", label: "10Y 实际利率 TIPS", seriesId: "DFII10", unit: "%", digits: 2 },
+    { key: "m2", label: "M2 货币供应量", seriesId: "M2SL", unit: "T", divisor: 1_000, digits: 3 },
+    { key: "sofr", label: "SOFR", seriesId: "SOFR", unit: "%", digits: 2 },
+    { key: "iorb", label: "IORB", seriesId: "IORB", unit: "%", digits: 2 },
+  ];
+  const [walcl, tga, rrp, ...extraSeries] = await Promise.all([
     fetchFredSeries("WALCL"),
     fetchFredSeries("WTREGEN"),
     fetchFredSeries("RRPONTSYD"),
+    ...extraSpecs.map((spec) => fetchFredSeries(spec.seriesId)),
   ]);
 
   const rows = walcl
@@ -955,9 +1075,48 @@ async function fetchFedLiquidity(statuses: SourceStatus[]) {
   const previousMonth = rows.at(-5);
 
   if (!latest) {
+    const fallback = await fetchDollarLiquidityFallback();
+    const fallbackCount = Object.values(fallback.signals).filter((item) => item.value !== MISSING).length;
     statuses.push(status("fred:fed-liquidity", "missing", "WALCL / WTREGEN / RRPONTSYD unavailable"));
+    if (fallbackCount) {
+      statuses.push(status("dollarliquidity:api", "ok", `${fallbackCount} liquidity indicators from DollarLiquidity API`));
+      return fallback;
+    }
+    statuses.push(status("dollarliquidity:api", "missing", "DollarLiquidity API unavailable"));
     return emptyLiquidity();
   }
+
+  const extraSignals = Object.fromEntries(extraSpecs.map((spec, index) => [spec.key, buildFredSignal(extraSeries[index] ?? [], spec)]));
+  const sofr = extraSignals.sofr;
+  const iorb = extraSignals.iorb;
+  const sofrIorb = {
+    label: "SOFR-IORB 利差",
+    value: typeof sofr?.value === "number" && typeof iorb?.value === "number" ? cleanNumber((sofr.value - iorb.value) * 100, 1) : MISSING,
+    change1w: typeof sofr?.change1w === "number" && typeof iorb?.change1w === "number" ? cleanNumber((sofr.change1w - iorb.change1w) * 100, 1) : MISSING,
+    change4w: typeof sofr?.change4w === "number" && typeof iorb?.change4w === "number" ? cleanNumber((sofr.change4w - iorb.change4w) * 100, 1) : MISSING,
+    unit: "bps",
+    asOf: sofr?.asOf || iorb?.asOf || "",
+    source: "FRED SOFR / IORB",
+  };
+  const signals = {
+    netLiquidity: {
+      label: "综合净流动性",
+      value: latest.netLiquidity,
+      change1w: previousWeek ? cleanNumber(latest.netLiquidity - previousWeek.netLiquidity, 3) : MISSING,
+      change4w: previousMonth ? cleanNumber(latest.netLiquidity - previousMonth.netLiquidity, 3) : MISSING,
+      unit: "T",
+      asOf: latest.asOf,
+      source: "FRED WALCL / WTREGEN / RRPONTSYD",
+    },
+    fedBalanceSheet: buildFredSignal(walcl, { key: "fedBalanceSheet", label: "Fed 总资产", seriesId: "WALCL", unit: "T", divisor: 1_000_000, digits: 3 }),
+    tga: buildFredSignal(tga, { key: "tga", label: "TGA 余额", seriesId: "WTREGEN", unit: "T", divisor: 1_000_000, digits: 3 }),
+    rrp: buildFredSignal(rrp, { key: "rrp", label: "ONRRP 余额", seriesId: "RRPONTSYD", unit: "T", divisor: 1_000, digits: 3 }),
+    sofrIorb,
+    dxy: extraSignals.dxy,
+    tips10y: extraSignals.tips10y,
+    hyOas: extraSignals.hyOas,
+    m2: extraSignals.m2,
+  };
 
   statuses.push(status("fred:fed-liquidity", "ok", `latest ${latest.asOf}, net ${latest.netLiquidity.toFixed(3)}T`));
   return {
@@ -966,6 +1125,7 @@ async function fetchFedLiquidity(statuses: SourceStatus[]) {
     netLiquidityChange4w: previousMonth ? cleanNumber(latest.netLiquidity - previousMonth.netLiquidity, 3) : MISSING,
     source: "FRED WALCL / WTREGEN / RRPONTSYD",
     formula: "WALCL - WTREGEN - RRPONTSYD",
+    signals,
   };
 }
 
@@ -1028,6 +1188,28 @@ function buildIndexIndicator(data: MarketData, symbol: "QQQ" | "SPY") {
     option: data.options[symbol] ?? emptyOption("unavailable"),
     source: quote?.source ?? "unavailable",
     timestamp: quote?.timestamp ?? "",
+    history: data.priceHistory[symbol]?.slice(-365) ?? [],
+  };
+}
+
+function buildGoldIndicator(data: MarketData) {
+  const symbol = "GLD";
+  const series = data.history[symbol];
+  const quote = data.quotes[symbol];
+  return {
+    price: quote?.price ?? MISSING,
+    change1dPct: quote?.change1dPct ?? MISSING,
+    pe: MISSING,
+    peSource: "not applicable; GLD proxy",
+    ma10: movingAverage(series, 10),
+    ma30: movingAverage(series, 30),
+    ma60: movingAverage(series, 60),
+    ma180: movingAverage(series, 180),
+    atr14: atrProxy(series),
+    option: data.options[symbol] ?? emptyOption("unavailable"),
+    source: quote?.source ? `${quote.source} GLD proxy` : "unavailable",
+    timestamp: quote?.timestamp ?? "",
+    history: data.priceHistory[symbol]?.slice(-365) ?? [],
   };
 }
 
@@ -1048,6 +1230,7 @@ function buildStockIndicator(data: MarketData, symbol: string): StockIndicator {
     option: data.options[symbol] ?? emptyOption("unavailable"),
     source: quote?.source ?? "unavailable",
     timestamp: quote?.timestamp ?? "",
+    history: data.priceHistory[symbol]?.slice(-365) ?? [],
   };
 }
 
@@ -1162,6 +1345,7 @@ export async function getMarketSnapshot(): Promise<MarketSnapshot> {
     indices: {
       QQQ: buildIndexIndicator(marketData, "QQQ"),
       SPY: buildIndexIndicator(marketData, "SPY"),
+      GOLD: buildGoldIndicator(marketData),
     },
     volatility: {
       VIX: vix,
@@ -1172,6 +1356,7 @@ export async function getMarketSnapshot(): Promise<MarketSnapshot> {
     fx: {
       USDCNY: fx.USDCNY ?? { value: MISSING, change1dPct: MISSING, source: "unavailable" },
       USDJPY: fx.USDJPY ?? { value: MISSING, change1dPct: MISSING, source: "unavailable" },
+      USDEUR: fx.USDEUR ?? { value: MISSING, change1dPct: MISSING, source: "unavailable" },
     },
     bonds: {
       US1Y: bonds.US1Y ?? { yield: MISSING, change5dPct: MISSING, asOf: "", source: "unavailable" },

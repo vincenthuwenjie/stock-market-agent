@@ -1,5 +1,10 @@
 export type Scalar = number | "N/A";
 
+export type TimeSeriesPoint = {
+  date: string;
+  value: Scalar;
+};
+
 export type SourceStatus = {
   name: string;
   status: "ok" | "missing" | "empty" | "skipped" | "available";
@@ -40,6 +45,7 @@ export type IndexIndicator = {
   option: OptionSummary;
   source: string;
   timestamp: string;
+  history: TimeSeriesPoint[];
 };
 
 export type StockIndicator = {
@@ -56,6 +62,17 @@ export type StockIndicator = {
   option: OptionSummary;
   source: string;
   timestamp: string;
+  history: TimeSeriesPoint[];
+};
+
+export type MacroSignal = {
+  label: string;
+  value: Scalar;
+  change1w: Scalar;
+  change4w: Scalar;
+  unit: string;
+  asOf: string;
+  source: string;
 };
 
 export type InfluencerMockAnalysisItem = {
@@ -116,8 +133,8 @@ export type MarketSnapshot = {
     items: CompleteReportItem[];
   };
   macroIndicators: {
-    indices: Record<"QQQ" | "SPY", IndexIndicator>;
-    volatility: Record<string, { value: Scalar; change1dPct: Scalar; source: string }>;
+    indices: Record<string, IndexIndicator>;
+    volatility: Record<string, { value: Scalar; change1dPct: Scalar; source: string; history?: TimeSeriesPoint[] }>;
     liquidity: {
       netLiquidity: Scalar;
       netLiquidityChange1w: Scalar;
@@ -128,6 +145,7 @@ export type MarketSnapshot = {
       asOf: string;
       source: string;
       formula: string;
+      signals?: Record<string, MacroSignal>;
     };
     fx: Record<string, { value: Scalar; change1dPct: Scalar; source: string }>;
     bonds: Record<string, { yield: Scalar; change5dPct: Scalar; asOf: string; source: string }>;
